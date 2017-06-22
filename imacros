@@ -1,0 +1,69 @@
+VERSION BUILD=844 RECORDER=CR
+SET !VAR1 1
+
+TAB OPEN NEW
+ADD !VAR1 1
+TAB T={{!VAR1}}
+URL GOTO=http://www.kickasstraffic.com/surf
+
+SET !TIMEOUT_STEP 1
+SET !ERRORIGNORE YES
+
+FRAME F=2
+'TAG POS=1 TYPE=DIV ATTR=CLASS:recaptcha-checkbox-checkmark&&ROLE:presentation&&TXT:
+TAG POS=1 TYPE=DIV ATTR=CLASS:recaptcha-checkbox-checkmark
+'SET !VAR2 EVAL("var s=\"{{!EXTRACT}}\"; if(s=='#EANF#') 0; else document.querySelector('div.recaptcha-checkbox-checkmark').click();")
+
+WAIT SECONDS=25
+FRAME F=0
+TAG POS=1 TYPE=A ATTR=HREF:"surf"
+'document.querySelector('div.recaptcha-checkbox-checkmark').click()
+TAB CLOSE
+
+SET !ERRORIGNORE NO
+SET !TIMEOUT_STEP 6
+
+
+/* */
+
+VERSION BUILD=844 RECORDER=CR
+URL GOTO=https://bitlucky.io/faucet
+TAG POS=1 TYPE=BUTTON FORM=ACTION:claim ATTR=ID:button
+WAIT SECONDS=5
+TAG POS=1 TYPE=A ATTR=TXT:Claim
+
+ONDOWNLOAD FOLDER=C:\dev\js_dev\node FILE=+_file23.jpg 
+
+'TAG POS=1 TYPE=IMG ATTR=ID:adcopy-puzzle-image-image CONTENT=EVENT:SAVEITEM
+TAG POS=1 TYPE=IMG ATTR=ID:adcopy-puzzle-image-image CONTENT=EVENT:SAVE_ELEMENT_SCREENSHOT 
+
+
+'TAG POS=1 TYPE=INPUT:TEXT FORM=ACTION:faucet ATTR=ID:adcopy_response CONTENT=open<SP>season
+'TAG POS=1 TYPE=BUTTON FORM=ACTION:faucet ATTR=ID:button
+
+/* */
+
+VERSION BUILD=844 RECORDER=CR
+SET !VAR1 1
+
+TAB OPEN NEW
+ADD !VAR1 1
+TAB T={{!VAR1}}
+URL GOTO=http://www.kickasstraffic.com/surf
+
+SET !TIMEOUT_STEP 1
+SET !ERRORIGNORE YES
+
+FRAME F=2
+'TAG POS=1 TYPE=DIV ATTR=CLASS:recaptcha-checkbox-checkmark&&ROLE:presentation&&TXT:
+TAG POS=1 TYPE=DIV ATTR=CLASS:recaptcha-checkbox-checkmark
+'SET !VAR2 EVAL("var s=\"{{!EXTRACT}}\"; if(s=='#EANF#') 0; else document.querySelector('div.recaptcha-checkbox-checkmark').click();")
+
+WAIT SECONDS=25
+FRAME F=0
+TAG POS=1 TYPE=A ATTR=HREF:"surf"
+'document.querySelector('div.recaptcha-checkbox-checkmark').click()
+TAB CLOSE
+
+SET !ERRORIGNORE NO
+SET !TIMEOUT_STEP 6
