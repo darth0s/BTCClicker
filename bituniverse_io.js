@@ -4,10 +4,9 @@ var datum;
 var current_timestamp;
 var current_balance;
 
+var apikey = '6OSN9CJ6BGXUTAMPJM';
 
-function kwsolver(fileName){
-
-
+function kwsolver(fileName,apikey){
 /***********************************************************************/
     /* 9kw / captcha api part.. probably don't need to change that */
 /***********************************************************************/
@@ -33,24 +32,15 @@ function kwsolver(fileName){
             });
           casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
 
-                    var captchaid;
-                  //  console.log(fileName);
-                    var apikey = '6OSN9CJ6BGXUTAMPJM'
-
-
-                    //console.log("testig on: " + fileName);
-
-
-                   // console.log("currently on: "+this.getTitle() +" | " + this.getCurrentUrl());
-                    //var fileName = 'C:/dev/js_dev/node/file22.png';
-
+                    var captchaid;                  
+                    //var apikey = '6OSN9CJ6BGXUTAMPJM';
                       
                             this.fillSelectors('form[action="/index.cgi"]', {
                                     'input[name="apikey"]':apikey,
                                     'input[name="file-upload-01"]': fileName
                                 }, true);
                                 
-                    console.log("Captcha Pushed [" + generateTimestamp("short") +"]" );
+                            console.log("Captcha Pushed [" + generateTimestamp("short") +"]" );
 
                             this.then(function(){
 
@@ -147,9 +137,8 @@ if (version =="short")
 
 }
 
-
 var casper1 = require('casper').create({
-waitTimeout: 120000,
+waitTimeout: 120000, 
 headers: {
         'Accept-Language': 'en'
     },
@@ -167,25 +156,37 @@ onPageInitialized: function (page) {
     }
 
     });
-//casper1.options.waitTimeout = 120000;
-//casper1.options.viewportSize: {width: 1920,height: 1080};
 
 var casper2done = false;
 
 
 /***********************************************************************/
-                 /* faucet specific navigation */
+            /* faucet specific navigation starts here */
 /***********************************************************************/
 
 casper1.start("https://bituniverse.net/").then(function(){
-    //casper1.capture("casper1_1.png");
+
+//cleanup previously generated screenshots
+
+        this.wait(100,function(){
+
+            var path = ""; // needs trailing slash
+            var list = fs.list(path);
+
+            for(var x = 0; x < list.length; x++){
+                var file = path + list[x];
+                if(fs.isFile(file) && file.match(".png$")){
+                    fs.remove(file);
+                    console.log("Deleted " + file);
+                }
+            }
+
+        });
 
 /***********************************************************************/
                               /* login */
 /***********************************************************************/
    
-        this.capture("bituniverse_"+ generateTimestamp()+".jpg");
-
         this.wait(1000,function(){
             
             console.log("Login [" + generateTimestamp("short")  +"]");
@@ -197,7 +198,7 @@ casper1.start("https://bituniverse.net/").then(function(){
 
             });
 
-      // this.capture("bituniverse1"+ generateTimestamp()+".jpg");
+      // this.capture("bituniverse"+ generateTimestamp()+".png");
         });
 
         this.wait(5000, function(){
@@ -209,12 +210,12 @@ casper1.start("https://bituniverse.net/").then(function(){
 
        casper1.wait(100,function(){ //wait to start second page
 
-            kwsolver('file22.png');
+            kwsolver('file22.png',apikey);
 
         });
 
 
-}).waitFor(function check(){
+}).waitFor(function check(){ //wait for kswolver to finish
     return casper2done;
 
 }).then(function(){
@@ -287,12 +288,12 @@ casper1.start("https://bituniverse.net/").then(function(){
 
    casper1.wait(100,function(){ //wait to start second page
 
-            kwsolver('file23.png');
+            kwsolver('file23.png',apikey);
 
         });
 
 
-}).waitFor(function check(){
+}).waitFor(function check(){ //wait for kswolver to finish
     return casper2done;
    
 }).then(function(){
@@ -341,27 +342,8 @@ casper1.start("https://bituniverse.net/").then(function(){
 
 
 }).run(function(){
-   // this.echo("DONE");
-       this.capture("operationDone "+generateTimestamp()+".png");
-/*
-   datum = this.evaluate(function() { 
-                            return document.querySelector('body').innerHTML;
-                         });
 
-    fs.write('claim.html', datum, 'w');
-*/
-
-        var path = ""; // needs trailing slash
-        var list = fs.list(path);
-
-        for(var x = 0; x < list.length; x++){
-            var file = path + list[x];
-            if(fs.isFile(file) && file.match(".png$")){
-                //fs.remove(file);
-                console.log("Deleted " + file);
-            }
-        }
-
+    this.capture("operationDone "+generateTimestamp()+".png");
     console.log("Operation Done [" + generateTimestamp("short") +"]");
     this.exit();
 
