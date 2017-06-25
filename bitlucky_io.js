@@ -5,8 +5,8 @@ var current_timestamp;
 var current_balance;
 var type;
 var claimed;
-var apikey = '6OSN9CJ6BGXUTAMPJM';
-
+var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
+var application = 'bitlucky';
 
 
 
@@ -356,10 +356,10 @@ casper1.start("https://bitlucky.io/").then(function(){
           method: 'post',
           data:{      
               'value': claimed,
-              'portal': 'bitlucky',
+              'portal': application,
               'claim': type
           }
-},claimed, type)}).run(function(){
+},claimed,application, type)}).run(function(){
 
 
     console.log(claimed+type);

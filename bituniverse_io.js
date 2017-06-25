@@ -5,7 +5,8 @@ var current_timestamp;
 var current_balance;
 var type;
 var claimed;
-var apikey = '6OSN9CJ6BGXUTAMPJM';
+var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
+var application = 'bituniverse';
 
 
 
