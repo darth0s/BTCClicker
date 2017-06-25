@@ -324,24 +324,55 @@ casper1.start("https://bituniverse.net/").then(function(){
 
      this.wait(1000,function(){
 
-        claimed = this.evaluate(function(){
-
-                
+        claimed = this.evaluate(function(){    
                 return document.querySelector('span[data-notify="message"]').textContent.match(/\d+/)[0];
-            
-
         });
-        console.log ("claimed: "+ claimed);
-        
+
+        if (claimed>0)
+        {
+        console.log ("woo hoo! claimed "+ claimed +" satoshi / approx: "+claimed*0.0009749+" PLN");
+        } else {
+            console.log("something went wrong. no satoshi for you!");
+        }
+
+        append_message = generateTimestamp()+";"+"bituniverse"+";"+claimed+";claimed";
+        //fs.appendFileSync('stats.txt', append_message);
+
+              
+        var mysql = require('mysql');
+
+        var con = mysql.createConnection({
+          host: "meowbi.nazwa.pl",
+          user: "meowbi_1",
+          password: "ED9y6w9u89fq",
+          database: "meowbi_1"
+        });
+
+        con.connect(function(err) {
+          if (err) throw err;
+          console.log("Connected!");
+          var sql = "INSERT INTO stats (value, portal, type) VALUES ("+claimer+",'bituniverse', 'claim')";
+          con.query(sql, function (err, result) {
+            if (err) throw err;
+            console.log("1 record inserted");
+          });
+        });
+
+
+
+
         fs.remove('captchaid.txt');
         fs.remove('answer.txt');
         casper2done = false;
-
+        
 
      });
 
 
 }).run(function(){
+
+//append claimed value to stats for reporting
+
 
     this.capture("operationDone "+generateTimestamp()+".png");
     console.log("Operation Done [" + generateTimestamp("short") +"]");
