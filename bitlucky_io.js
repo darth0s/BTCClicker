@@ -48,7 +48,7 @@ function kwsolver(fileName,apikey){
 
                             this.then(function(){
 
-                                this.wait(90000,function(){ //wait for captcha to be solved
+                                this.wait(80000,function(){ //wait for captcha to be solved
 
                                      console.log("Fetching Captcha [" + generateTimestamp("short") +"]" );
 
@@ -168,7 +168,7 @@ var casper2done = false;
             /* faucet specific navigation starts here */
 /***********************************************************************/
 
-casper1.start("https://bituniverse.net/").then(function(){
+casper1.start("https://bitlucky.io/").then(function(){
 
 //cleanup previously generated screenshots
 
@@ -205,8 +205,9 @@ casper1.start("https://bituniverse.net/").then(function(){
       // this.capture("bituniverse"+ generateTimestamp()+".png");
         });
 
-        this.wait(2000, function(){
+        this.wait(5000, function(){
             console.log("Saving Captcha [" + generateTimestamp("short")  +"]");
+               this.capture("loging "+generateTimestamp()+".png");
             this.captureSelector('file22.png', '#adcopy-puzzle-image');
 
         });
@@ -244,7 +245,7 @@ casper1.start("https://bituniverse.net/").then(function(){
         });
 
 
-        this.wait(500,function(){
+        this.wait(1000,function(){
 
             this.capture("loging "+generateTimestamp()+".png");
 
@@ -280,7 +281,7 @@ casper1.start("https://bituniverse.net/").then(function(){
 
     });
 
-    this.wait(2000, function(){
+    this.wait(5000, function(){
             this.capture("claiming "+generateTimestamp()+".png");
             
             console.log("Saving Captcha [" + generateTimestamp("short")  +"]");
@@ -349,13 +350,13 @@ casper1.start("https://bituniverse.net/").then(function(){
      });
 
 
-}).then(function(){
-    casper1.thenOpen("http://meowbi.nazwa.pl/darth0s/btc/mysql_load.php", {
+}).then(function(){ //this then must be the last one as it navigates away in the same tab..
+    thenOpen("http://meowbi.nazwa.pl/darth0s/btc/mysql_load.php", {
     //append claimed value to stats for reporting
           method: 'post',
           data:{      
               'value': claimed,
-              'portal': 'bituniverse',
+              'portal': 'bitlucky',
               'claim': type
           }
 },claimed, type)}).run(function(){
@@ -363,7 +364,7 @@ casper1.start("https://bituniverse.net/").then(function(){
 
     console.log(claimed+type);
 
-    this.capture("operationDone "+generateTimestamp()+".png");
+   
     console.log("Operation Done [" + generateTimestamp("short") +"]");
     this.exit();
 
