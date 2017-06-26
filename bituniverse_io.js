@@ -379,7 +379,7 @@ casper1.start("https://bituniverse.net/").then(function(){
 },claimed,application, type)}).run(function(){
 
 
-    console.log(claimed+type);
+//    console.log(claimed+type);
 
    // this.capture("operationDone "+generateTimestamp()+".png");
     console.log("Operation Done [" + generateTimestamp("short") +"]");

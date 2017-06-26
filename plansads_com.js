@@ -164,8 +164,8 @@ var datetimeshift  = shifteddate.getDate() + "_"
 
 var casper1 = require('casper').create({
 waitTimeout: 120000, 
-verbose:true,
-logLevel:"debug",
+//verbose:true,
+//logLevel:"debug",
 headers: {
         'Accept-Language': 'en'
     },
