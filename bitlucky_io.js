@@ -5,9 +5,10 @@ var current_timestamp;
 var current_balance;
 var type;
 var claimed;
+var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
 var application = 'bitlucky';
-
+var cooldown=5;
 
 
 function kwsolver(fileName,apikey){
@@ -58,7 +59,7 @@ function kwsolver(fileName,apikey){
 
                                         });
                                     
-                                    url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&apikey=6OSN9CJ6BGXUTAMPJM&id='+captchaid;
+                             url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&&prio=1&apikey='+apikey+'&id='+captchaid;
                                   
                                     fs.write('captchaid.txt',url, 'w');
 
@@ -107,7 +108,6 @@ function kwsolver(fileName,apikey){
 
 }
 
-
 function generateTimestamp(version){
 
 
@@ -129,15 +129,31 @@ var datetimesafe =currentdate.getDate() + ""
                 + currentdate.getSeconds();
 
 
-if (version =="short")
-{
+var shifteddate = new Date();
+shifteddate.setTime(currentdate.getTime()+(cooldown*60*1000));
 
-    return datetime;
-}else {
+var datetimeshift  = shifteddate.getDate() + "_"
+                + (shifteddate.getMonth()+1)  + "_" 
+                + shifteddate.getFullYear() + " | "  
+                + shifteddate.getHours() + "_"  
+                + shifteddate.getMinutes() + "_" 
+                + shifteddate.getSeconds();
 
 
-    return datetimesafe
-}
+        if (version =="short")
+        {
+
+            return datetime;
+
+        }else if(version=="shift") {
+
+            return datetimeshift 
+
+        }else {
+
+            return datetimesafe
+            
+        }
 
 }
 
@@ -195,12 +211,12 @@ casper1.start("https://bitlucky.io/").then(function(){
             
             console.log("Login [" + generateTimestamp("short")  +"]");
             
-            this.evaluate(function() {
-                document.querySelector('input[name=address]').value = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
+            this.evaluate(function(bitwallet) {
+                document.querySelector('input[name=address]').value = bitwallet;
                 document.querySelector('.btn-lg').click(); 
                 //document.getElementById('button').click();
 
-            });
+            },bitwallet);
 
       // this.capture("bituniverse"+ generateTimestamp()+".png");
         });
@@ -325,7 +341,7 @@ casper1.start("https://bitlucky.io/").then(function(){
             },answer);
          
         });
-
+ 
 
      this.wait(1000,function(){
 
@@ -339,7 +355,12 @@ casper1.start("https://bitlucky.io/").then(function(){
             type ="claimed";
         } else {
             console.log("something went wrong. no satoshi for you!");
-            type="failed";
+            
+                if (answer=='januvia'){
+                    type="failed-timeout";
+                }else{
+                    type="failed";
+                }
         }
 
         fs.remove('captchaid.txt');
@@ -366,6 +387,7 @@ casper1.start("https://bitlucky.io/").then(function(){
 
    
     console.log("Operation Done [" + generateTimestamp("short") +"]");
+        console.log("Next Run [" + generateTimestamp("shift") +"]");
     this.exit();
 
 });

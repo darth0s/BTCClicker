@@ -5,16 +5,17 @@ var current_timestamp;
 var current_balance;
 var type;
 var claimed;
+var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
 var application = 'bituniverse';
+var cooldown=5;
 
 
-
-
-function kwsolver(fileName,apikey){
 /***********************************************************************/
     /* 9kw / captcha api part.. probably don't need to change that */
 /***********************************************************************/
+
+function kwsolver(fileName,apikey){
 
         var casper2 = require('casper').create({
             waitTimeout: 120000,
@@ -59,7 +60,7 @@ function kwsolver(fileName,apikey){
 
                                         });
                                     
-                                    url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&apikey=6OSN9CJ6BGXUTAMPJM&id='+captchaid;
+                                    url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&prio=1&apikey='+apikey+'&id='+captchaid;
                                   
                                     fs.write('captchaid.txt',url, 'w');
 
@@ -67,6 +68,7 @@ function kwsolver(fileName,apikey){
 
                                     this.then(function(url){
                                         url = fs.read('captchaid.txt');
+
                                       console.log('passed url: '+url);
                                         //casper.open(url).then(function(){
                                         this.open(url).then(function(){   
@@ -90,10 +92,12 @@ function kwsolver(fileName,apikey){
                                          // this.capture("9kw1"+generateTimestamp(short)+".png");
 
                                             
-                                        })
-
-
-                                    })
+                                        });
+                                       // .waitForSelectorTextChange('body',function(){
+                                         //   console.log("answer provided");
+                                       // }) ;
+                                        
+                                    }) ;
 
                                 });
 
@@ -107,7 +111,6 @@ function kwsolver(fileName,apikey){
         });
 
 }
-
 
 function generateTimestamp(version){
 
@@ -130,20 +133,38 @@ var datetimesafe =currentdate.getDate() + ""
                 + currentdate.getSeconds();
 
 
-if (version =="short")
-{
+var shifteddate = new Date();
+shifteddate.setTime(currentdate.getTime()+(cooldown*60*1000));
 
-    return datetime;
-}else {
+var datetimeshift  = shifteddate.getDate() + "_"
+                + (shifteddate.getMonth()+1)  + "_" 
+                + shifteddate.getFullYear() + " | "  
+                + shifteddate.getHours() + "_"  
+                + shifteddate.getMinutes() + "_" 
+                + shifteddate.getSeconds();
 
 
-    return datetimesafe
-}
 
-}
+        if (version =="short")
+        {
+
+            return datetime;
+
+        }else if(version=="shift") {
+
+            return datetimeshift 
+
+        }else {
+
+            return datetimesafe
+
+        }
+
+} 
 
 var casper1 = require('casper').create({
 waitTimeout: 120000, 
+//clientScripts:["generateTimestamp.js"],
 headers: {
         'Accept-Language': 'en'
     },
@@ -162,6 +183,7 @@ onPageInitialized: function (page) {
 
     });
 
+//casper1.options.clientScripts.push('./generateTimestamp.js');
 var casper2done = false;
 
 
@@ -196,17 +218,17 @@ casper1.start("https://bituniverse.net/").then(function(){
             
             console.log("Login [" + generateTimestamp("short")  +"]");
             
-            this.evaluate(function() {
-                document.querySelector('input[name=address]').value = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
-                document.querySelector('.btn-lg').click(); 
-                //document.getElementById('button').click();
+           // console.log(bitwallet);
 
-            });
+            this.evaluate(function(bitwallet) {
+                document.querySelector('input[name=address]').value = bitwallet;
+                document.querySelector('.btn-lg').click(); 
+            },bitwallet);
 
       // this.capture("bituniverse"+ generateTimestamp()+".png");
         });
 
-        this.wait(2000, function(){
+        this.wait(4000, function(){
             console.log("Saving Captcha [" + generateTimestamp("short")  +"]");
             this.captureSelector('file22.png', '#adcopy-puzzle-image');
 
@@ -303,7 +325,7 @@ casper1.start("https://bituniverse.net/").then(function(){
    
 }).then(function(){
 
-     this.wait(100,function(){
+     this.wait(1000,function(){
     
         this.capture("claiming "+generateTimestamp()+".png");
 
@@ -311,11 +333,6 @@ casper1.start("https://bituniverse.net/").then(function(){
             //this.capture("answering"+generateTimestamp()+".png");
             
             answer = fs.read('answer.txt');
-           
-            if (answer=="") {
-                answer = 'januvia';
-            }
-
             console.log("answering: "+answer);
 
 
@@ -356,16 +373,17 @@ casper1.start("https://bituniverse.net/").then(function(){
           method: 'post',
           data:{      
               'value': claimed,
-              'portal': 'bituniverse',
+              'portal': application,
               'claim': type
           }
-},claimed, type)}).run(function(){
+},claimed,application, type)}).run(function(){
 
 
     console.log(claimed+type);
 
-    this.capture("operationDone "+generateTimestamp()+".png");
+   // this.capture("operationDone "+generateTimestamp()+".png");
     console.log("Operation Done [" + generateTimestamp("short") +"]");
+    console.log("Next Run [" + generateTimestamp("shift") +"]");
     this.exit();
 
 });
