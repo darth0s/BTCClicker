@@ -13,7 +13,6 @@ var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
 var application = 'bitlucky';
 var cooldown=5;
 
-
 function pusher(claimed,type,start_time,end_time){
 
     claimed=claimed;
@@ -32,9 +31,15 @@ function pusher(claimed,type,start_time,end_time){
               'start_time':start_time,
               'end_time':end_time
           }
-    });
 
-     console.log('pusher pushed: '+claimed+"|"+application+"|"+type+"|"+start_time+"|"+end_time);
+    },function(){
+
+         this.capture(application+" pusher21 "+generateTimestamp()+".png");
+           console.log('pusher pushed: '+claimed+"|"+application+"|"+type+"|"+start_time+"|"+end_time);
+    });
+    
+//    this.capture(application+" pusher2 "+generateTimestamp()+".png");
+  
 }
 
 /***********************************************************************/
@@ -92,41 +97,33 @@ function kwsolver(fileName,apikey){
 
                                     //this.capture("9kw1"+generateTimestamp()+".png");
 
-                                    this.then(function(url){
-                                        url = fs.read(application+'captchaid.txt');
+                                            this.then(function(url){
+                                                url = fs.read(application+'captchaid.txt');
 
-                                      console.log('passed url: '+url);
-                                        //casper.open(url).then(function(){
-                                        this.open(url).then(function(){   
-                                      //  console.log("currently on: "+ this.getCurrentUrl());
-                                           
-                                            answer = this.evaluate(function(){
+                                              console.log('passed url: '+url);
+                                                //casper.open(url).then(function(){
+                                                    this.open(url).then(function(){   
+                                                  //  console.log("currently on: "+ this.getCurrentUrl());
+                                                       
+                                                        answer = this.evaluate(function(){
 
-                                                return document.querySelector('body').textContent;
+                                                            return document.querySelector('body').textContent;
 
-                                            });
-                                            
+                                                        });
 
-                                            if (answer=="") {
-                                               pusher(0,"failed to captcha",start_time,generateTimestamp());
-                                                console.log("failed to captcha. Check captcha id if correct: "+fs.read(application+'captchaid.txt'));
-                                                casper1.exit();
-                                                this.exit();
-                                            }
+                                                      //  this.capture("asnwer"+generateTimestamp()+".png");
+                                                        console.log("Fetched answer is: "+ answer);
+                                                        fs.write(application+'answer.txt',answer, 'w');
 
-                                          //  this.capture("asnwer"+generateTimestamp()+".png");
-                                            console.log("Fetched answer is: "+ answer);
-                                            fs.write(application+'answer.txt',answer, 'w');
+                                                     // this.capture("9kw1"+generateTimestamp(short)+".png");
 
-                                         // this.capture("9kw1"+generateTimestamp(short)+".png");
-
-                                            
-                                        });
-                                       // .waitForSelectorTextChange('body',function(){
-                                         //   console.log("answer provided");
-                                       // }) ;
-                                        
-                                    }) ;
+                                                        
+                                                    });
+                                               // .waitForSelectorTextChange('body',function(){
+                                                 //   console.log("answer provided");
+                                               // }) ;
+                                                
+                                            }) ;
 
                                 });
 
@@ -134,12 +131,23 @@ function kwsolver(fileName,apikey){
 
 
         }).run(function(){
+
             console.log("Leaving Solver [" + generateTimestamp("short") +"]" );
            // this.echo("DONE 2");
             casper2done = true;
+
+            if (answer=="") {
+                pusher(0,"failed to captcha",start_time,generateTimestamp());
+                this.capture(application+" kwfailure2 "+generateTimestamp()+".png");
+                console.log("failed to captcha. Check captcha id if correct: "+fs.read(application+'captchaid.txt'));
+                casper1.exit();
+                this.exit();
+            }
+        
         });
 
 }
+
 function cleaner(mode){
             var path = ""; // needs trailing slash
             var list = fs.list(path);
@@ -154,45 +162,45 @@ function cleaner(mode){
                     )
                 {
                     fs.remove(file);
-                     if (mode!="quiet"){
+                  
+                    if (mode!="quiet"){
                     console.log("Deleted " + file);
                     }
                 }
             }
 }
 
-
 function generateTimestamp(version){
 
 
 var currentdate = new Date(); 
-var datetime =    currentdate.getDate() + "_"
-                + (currentdate.getMonth()+1)  + "_" 
-                + currentdate.getFullYear() + " | "  
-                + currentdate.getHours() + "_"  
-                + currentdate.getMinutes() + "_" 
-                + currentdate.getSeconds();
 
 
+year = currentdate.getFullYear();
 
-var datetimesafe =currentdate.getFullYear() + ""
-                + (currentdate.getMonth()+1)  + "" 
-                + currentdate.getDate() + ""  
-                + currentdate.getHours() + ""  
-                + currentdate.getMinutes() + "" 
-                + currentdate.getSeconds();
+if(currentdate.getMonth()+1<10){month = "0"+(currentdate.getMonth()+1);}else{month = currentdate.getMonth()+1;};
+if(currentdate.getDate()<10){day= "0"+currentdate.getDate();}else{ day=currentdate.getDate();};
+if(currentdate.getHours()<10){hour= "0"+currentdate.getHours();}else{ hour= currentdate.getHours();};
+if(currentdate.getMinutes()<10){ minute= "0"+currentdate.getMinutes();}else{ minute= currentdate.getMinutes();} ;
+if(currentdate.getSeconds()<10){second = "0"+currentdate.getSeconds();}else{ second= currentdate.getSeconds();};
+
+
+var datetime = day +"_" + month +"_" + year + " | " + hour +"_" +minute +"_" +second;
+var datetimesafe = year +"" + month +"" + day + "" + hour +"" +minute +"" +second;
+
+
 
 var shifteddate = new Date();
 shifteddate.setTime(currentdate.getTime()+(cooldown*60*1000));
 
-var datetimeshift  = shifteddate.getDate() + "_"
-                + (shifteddate.getMonth()+1)  + "_" 
-                + shifteddate.getFullYear() + " | "  
-                + shifteddate.getHours() + "_"  
-                + shifteddate.getMinutes() + "_" 
-                + shifteddate.getSeconds();
+if(shifteddate.getMonth()+1<10){ monthsafe = "0"+(shifteddate.getMonth()+1);}else{ monthsafe = shifteddate.getMonth()+1;};
+if(shifteddate.getDate()<10){ daysafe= "0"+shifteddate.getDate();}else{ daysafe = shifteddate.getDate();};
+if(shifteddate.getHours()<10){ hoursafe= "0"+shifteddate.getHours();}else{ hoursafe= shifteddate.getHours();};
+if(shifteddate.getMinutes()<10){ minutesafe= "0"+shifteddate.getMinutes();}else{ minutesafe= shifteddate.getMinutes();} ;
+if(shifteddate.getSeconds()<10) {secondsafe = "0"+shifteddate.getSeconds();}else{ secondsafe= shifteddate.getSeconds();};
 
 
+var datetimeshift = daysafe +"_" + monthsafe +"_" + year + " | " + hoursafe +"_" +minutesafe +"_" +secondsafe;
 
         if (version =="short")
         {
@@ -210,6 +218,9 @@ var datetimeshift  = shifteddate.getDate() + "_"
         }
 
 } 
+
+
+/* end of functions */
 
 var casper1 = require('casper').create({
 waitTimeout: 150000, 
@@ -272,28 +283,28 @@ this.wait(1000,function(){
 //change captcha to solvemedia
 this.wait(2000,function(){
 
-    var selected_captcha = this.evaluate(function(){
-         return document.querySelectorAll('li')[0].textContent;
+        var selected_captcha = this.evaluate(function(){
+            return document.querySelectorAll('li')[0].textContent;
         });
 
 
         if (selected_captcha =="SolveMedia"){
 
 
-            this.wait(100, function(){
-                this.evaluate(function(){
-                    document.getElementById("dropdownList").click();
-                    document.querySelectorAll('li')[0].querySelector('a').click();    
-                    });
-            });
+                this.wait(100, function(){
+                    this.evaluate(function(){
+                        document.getElementById("dropdownList").click();
+                        document.querySelectorAll('li')[0].querySelector('a').click();    
+                        });
+                });
 
 
-            this.wait(2000, function(){
-                this.evaluate(function(bitwallet) {
-                    document.querySelector('input[name=address]').value = bitwallet;
-                    document.querySelector('a.btn-lg').click(); 
-                },bitwallet);
-            });
+                this.wait(2000, function(){
+                    this.evaluate(function(bitwallet) {
+                        document.querySelector('input[name=address]').value = bitwallet;
+                        document.querySelector('a.btn-lg').click(); 
+                    },bitwallet);
+                });
 
         } 
 
@@ -305,9 +316,9 @@ this.wait(2000,function(){
 // image_url = application+'file22'+'.png';
 
 this.wait(4000, function(){
-    this.capture(application+" captchaScreen "+generateTimestamp()+".png");
-    console.log("Saving Captcha [" + generateTimestamp("short")  +"]");
-    this.captureSelector(application+'file22.png', '#adcopy-puzzle-image');
+        this.capture(application+" captchaScreen "+generateTimestamp()+".png");
+        console.log("Saving Captcha [" + generateTimestamp("short")  +"]");
+        this.captureSelector(application+'file22.png', '#adcopy-puzzle-image');
 
 });
 
