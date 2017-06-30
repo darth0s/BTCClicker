@@ -336,6 +336,10 @@ this.wait(100,function(){ //wait to start second page
 }).then(function(){
    //back to the first page
     
+
+           
+
+
         this.wait(100,function(){
 
 
@@ -344,6 +348,16 @@ this.wait(100,function(){ //wait to start second page
             this.capture(application+" loging "+generateTimestamp()+".png");
             
             answer = fs.read(application+ 'answer.txt');
+
+
+            if (answer=="") {
+                pusher(0,"failed to captcha",start_time,generateTimestamp());
+                this.capture(application+" kwfailure2 "+generateTimestamp()+".png");
+                console.log("failed to captcha. Check captcha id if correct: "+fs.read(application+'captchaid.txt'));
+                casper1.exit();
+                this.exit();
+            }
+
 
             console.log("answering: "+answer);
 
