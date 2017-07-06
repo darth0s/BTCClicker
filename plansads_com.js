@@ -10,6 +10,8 @@ var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
 var application = 'plansads';
 var cooldown = 10; //cool down in minutes (before next run)
+var captcha_timeout = 90000;
+
 
 
 function pusher(claimed,type,start_time,end_time){ 
@@ -49,7 +51,7 @@ function pusher(claimed,type,start_time,end_time){
 function kwsolver(fileName,apikey){
 
         var casper2 = require('casper').create({
-            waitTimeout: 150000,
+            waitTimeout: 40000+captcha_timeout,
             headers: {
                     'Accept-Language': 'en'
                 },
@@ -80,7 +82,7 @@ function kwsolver(fileName,apikey){
 
                             this.then(function(){
 
-                                this.wait(90000,function(){ //wait for captcha to be solved
+                                this.wait(captcha_timeout,function(){ //wait for captcha to be solved
 
                                      console.log("Fetching Captcha [" + generateTimestamp("short") +"]" );
 
