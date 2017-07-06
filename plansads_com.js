@@ -364,7 +364,7 @@ casper1.start("http://google.com").then(function(){
 
         console.log("Operation Done [" + generateTimestamp("short") +"]");
         console.log("** Next Run [" + generateTimestamp("shift") +"] **");
-    cleaner("quiet");
+//    cleaner("quiet");
     this.exit();
 
 });
