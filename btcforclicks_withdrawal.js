@@ -8,7 +8,7 @@ var start_time;
 var claimed;
 var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
-var application = 'bituniverse_withdraw';
+var application = 'btcforclicks_withdraw';
 var cooldown=60;
 
 function pusher(claimed,type,start_time,end_time){ 
@@ -252,7 +252,7 @@ casper1.start("http://google.com").then(function(){
 
         });
 
-}).thenOpen("https://bituniverse.net/",function(){
+}).thenOpen("https://btcforclicks.io/",function(){
 
 /***********************************************************************/
                               /* login */
@@ -272,11 +272,46 @@ casper1.start("http://google.com").then(function(){
       // this.capture("bituniverse"+ generateTimestamp()+".png");
         });
 
+
+        //switch captcha to solvemedia
+        this.wait(2000,function(){
+
+        var selected_captcha = this.evaluate(function(){
+            return document.querySelectorAll('li')[0].textContent;
+        });
+
+
+        if (selected_captcha =="SolveMedia"){
+
+
+                this.wait(100, function(){
+                    this.evaluate(function(){
+                        document.getElementById("dropdownList").click();
+                        document.querySelectorAll('li')[0].querySelector('a').click();    
+                        });
+                });
+
+
+                this.wait(2000, function(){
+                    this.evaluate(function(bitwallet) {
+                        document.querySelector('input[name=address]').value = bitwallet;
+                        document.querySelector('a.btn-lg').click(); 
+                    },bitwallet);
+                });
+
+        } 
+
+
+        });
+
         this.wait(4000, function(){
             console.log("Saving Captcha [" + generateTimestamp("short")  +"]");
             this.captureSelector(application+'file22.png', '#adcopy-puzzle-image');
 
         });
+
+
+
 
 
        casper1.wait(100,function(){ //wait to start second page
@@ -288,6 +323,7 @@ casper1.start("http://google.com").then(function(){
 
 }).waitFor(function check(){ //wait for kswolver to finish
     return casper2done;
+
 
 }).then(function(){ //answer checking module
 
@@ -337,7 +373,7 @@ casper1.start("http://google.com").then(function(){
 
         });
 
-}).thenOpen("https://bituniverse.net/account",function(){
+}).thenOpen("https://btcforclicks.io/account",function(){
 
 /***********************************************************************/
                               /* claiming */
@@ -356,7 +392,8 @@ casper1.start("http://google.com").then(function(){
                 return document.querySelector('.btn-lg').textContent; //if logged, then there's no -lg button on this page
 
             })
-    });
+
+        });
 
 }).then(function(){ //answer correctness checking module
 
@@ -377,9 +414,8 @@ casper1.start("http://google.com").then(function(){
         }
 
 }).then(function(){
-      
-       this.wait(100, function(){    
-
+            
+   this.wait(100, function(){    
             fs.remove(application+'captchaid.txt');
             fs.remove(application+'answer.txt');
 
@@ -422,7 +458,7 @@ casper1.start("http://google.com").then(function(){
 
 }).waitFor(function check(){ //wait for kswolver to finish
     return casper2done;
-
+   
 }).then(function(){ //answer checking module
 
         answer = fs.read(application+'answer.txt');
@@ -441,7 +477,7 @@ casper1.start("http://google.com").then(function(){
                 });
 
         }
-   
+
 }).then(function(){
 
      this.wait(100,function(){

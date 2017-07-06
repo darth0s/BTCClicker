@@ -163,49 +163,49 @@ function cleaner(mode){
 
 function generateTimestamp(version){
 
-var currentdate = new Date(); 
+  var currentdate = new Date(); 
 
 
-year = currentdate.getFullYear();
+  year = currentdate.getFullYear();
 
-if(currentdate.getMonth()+1<10){month = "0"+(currentdate.getMonth()+1);}else{month = currentdate.getMonth()+1;};
-if(currentdate.getDate()<10){day= "0"+currentdate.getDate();}else{ day=currentdate.getDate();};
-if(currentdate.getHours()<10){hour= "0"+currentdate.getHours();}else{ hour= currentdate.getHours();};
-if(currentdate.getMinutes()<10){ minute= "0"+currentdate.getMinutes();}else{ minute= currentdate.getMinutes();} ;
-if(currentdate.getSeconds()<10){second = "0"+currentdate.getSeconds();}else{ second= currentdate.getSeconds();};
-
-
-var datetime = day +"_" + month +"_" + year + " | " + hour +"_" +minute +"_" +second;
-var datetimesafe = year +"" + month +"" + day + "" + hour +"" +minute +"" +second;
+  if(currentdate.getMonth()+1<10){month = "0"+(currentdate.getMonth()+1);}else{month = currentdate.getMonth()+1;};
+  if(currentdate.getDate()<10){day= "0"+currentdate.getDate();}else{ day=currentdate.getDate();};
+  if(currentdate.getHours()<10){hour= "0"+currentdate.getHours();}else{ hour= currentdate.getHours();};
+  if(currentdate.getMinutes()<10){ minute= "0"+currentdate.getMinutes();}else{ minute= currentdate.getMinutes();} ;
+  if(currentdate.getSeconds()<10){second = "0"+currentdate.getSeconds();}else{ second= currentdate.getSeconds();};
 
 
-
-var shifteddate = new Date();
-shifteddate.setTime(currentdate.getTime()+(cooldown*60*1000));
-
-if(shifteddate.getMonth()+1<10){ monthsafe = "0"+(shifteddate.getMonth()+1);}else{ monthsafe = shifteddate.getMonth()+1;};
-if(shifteddate.getDate()<10){ daysafe= "0"+shifteddate.getDate();}else{ daysafe = shifteddate.getDate();};
-if(shifteddate.getHours()<10){ hoursafe= "0"+shifteddate.getHours();}else{ hoursafe= shifteddate.getHours();};
-if(shifteddate.getMinutes()<10){ minutesafe= "0"+shifteddate.getMinutes();}else{ minutesafe= shifteddate.getMinutes();} ;
-if(shifteddate.getSeconds()<10) {secondsafe = "0"+shifteddate.getSeconds();}else{ secondsafe= shifteddate.getSeconds();};
+  var datetime = day +"_" + month +"_" + year + " | " + hour +"_" +minute +"_" +second;
+  var datetimesafe = year +"" + month +"" + day + "" + hour +"" +minute +"" +second;
 
 
-var datetimeshift = daysafe +"_" + monthsafe +"_" + year + " | " + hoursafe +"_" +minutesafe +"_" +secondsafe;
 
-        if (version =="short")
-        {
+  var shifteddate = new Date();
+  shifteddate.setTime(currentdate.getTime()+(cooldown*60*1000));
 
-            return datetime;
+  if(shifteddate.getMonth()+1<10){ monthsafe = "0"+(shifteddate.getMonth()+1);}else{ monthsafe = shifteddate.getMonth()+1;};
+  if(shifteddate.getDate()<10){ daysafe= "0"+shifteddate.getDate();}else{ daysafe = shifteddate.getDate();};
+  if(shifteddate.getHours()<10){ hoursafe= "0"+shifteddate.getHours();}else{ hoursafe= shifteddate.getHours();};
+  if(shifteddate.getMinutes()<10){ minutesafe= "0"+shifteddate.getMinutes();}else{ minutesafe= shifteddate.getMinutes();} ;
+  if(shifteddate.getSeconds()<10) {secondsafe = "0"+shifteddate.getSeconds();}else{ secondsafe= shifteddate.getSeconds();};
 
-        }else if(version=="shift") {
 
-            return datetimeshift 
+  var datetimeshift = daysafe +"_" + monthsafe +"_" + year + " | " + hoursafe +"_" +minutesafe +"_" +secondsafe;
 
-        }else {
+          if (version =="short")
+          {
 
-            return datetimesafe
+              return datetime;
 
-        }
+          }else if(version=="shift") {
+
+              return datetimeshift 
+
+          }else {
+
+              return datetimesafe
+
+          }
 
 } 
 
@@ -236,6 +236,8 @@ onPageInitialized: function (page) {
 var casper2done = false;
 start_time=generateTimestamp();
 
+
+console.log("** starting " + application +" **");
 
 /***********************************************************************/
             /* faucet specific navigation starts here */
@@ -375,9 +377,12 @@ casper1.start("http://google.com").then(function(){
 
 }).then(function(){ //answer correctness checking module
 
+
       if (logged_in=="Login" || logged_in.match(/([A-Z])\w+/g)=="Login"){
        claimed = 0;
+
        type = "failed to login";
+
        end_time = generateTimestamp();
 
     
@@ -525,7 +530,7 @@ casper1.start("http://google.com").then(function(){
     console.log("Operation Done [" + generateTimestamp("short") +"]");
     console.log("** Next Run [" + generateTimestamp("shift") +"] **");
     
-    //cleaner("quiet");
+    cleaner("quiet");
     this.exit();
 
 });

@@ -1,18 +1,14 @@
 @echo off
 echo *****  Starting bitlucky ******
 echo ################################
-casperjs bitlucky_io.js
+casperjs bitlucky_withdrawal.js
 
 echo ***** Starting bituniverse ******
 echo ################################
-casperjs bituniverse_io.js
+casperjs bituniverse_withdrawal.js
 
 echo *****  Starting Plansads  ******
 echo ################################
-casperjs plansads_com.js
-
-echo *****  Starting Plansads  ******
-echo ################################
-casperjs btcforclicks_io.js
+casperjs btcforclicks_withdrawal.js
 
 pause
