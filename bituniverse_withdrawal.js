@@ -68,7 +68,24 @@ function kwsolver(fileName,apikey){
                 }
 
             });
-          casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
+
+ casper2.start("https://www.9kw.eu/index.cgi?action=usercaptchaguthaben&apikey="+apikey).then(function(){
+
+            balance = this.evaluate(function(){
+                return document.querySelector('body').textContent;
+            })
+
+            if (balance<120){
+            console.log("Warning! low captcha credits: "+balance);
+            } else {
+            console.log("current 9kw credits: "+balance);    
+            }
+
+            
+
+        }).thenOpen("https://www.9kw.eu/grafik/form.html").then(function(){
+
+        //  casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
 
                     var captchaid;                  
                       
@@ -250,7 +267,7 @@ casper1.start("http://google.com").then(function(){
 
         this.wait(100,function(){
 
-         cleaner();
+    cleaner("quiet");
 
         });
 

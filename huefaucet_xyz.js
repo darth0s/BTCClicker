@@ -11,7 +11,7 @@ var type;
 var claimed;
 var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
-var application = 'bituniverse';
+var application = 'huefaucet';
 var cooldown=5;
 var captcha_timeout = 90000;
 
@@ -73,7 +73,7 @@ function kwsolver(fileName,apikey){
 
             });
 
-    casper2.start("https://www.9kw.eu/index.cgi?action=usercaptchaguthaben&apikey="+apikey).then(function(){
+        casper2.start("https://www.9kw.eu/index.cgi?action=usercaptchaguthaben&apikey="+apikey).then(function(){
 
             balance = this.evaluate(function(){
                 return document.querySelector('body').textContent;
@@ -88,7 +88,7 @@ function kwsolver(fileName,apikey){
             
 
         }).thenOpen("https://www.9kw.eu/grafik/form.html").then(function(){
-         // casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
+      //    casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
 
                     var captchaid;                  
                       
@@ -267,12 +267,11 @@ casper1.start("http://google.com").then(function(){
 
         this.wait(100,function(){
 
-           cleaner("quiet");
-
+    cleaner("quiet");
 
         });
 
-}).thenOpen("https://bituniverse.net/",function(){
+}).thenOpen("https://huefaucet.xyz/",function(){
 /***********************************************************************/
                               /* login */
 /***********************************************************************/
@@ -387,7 +386,7 @@ casper1.start("http://google.com").then(function(){
 
                 })
 
-               // logged_in = logged_in.trim();
+             //   logged_in = logged_in.trim();
 
                 console.log("logged in: '"+logged_in+"'");
                 console.log(logged_in.match(/([A-Z])\w+/g)=="Login");

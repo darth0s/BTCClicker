@@ -19,7 +19,7 @@ function pusher(claimed,type,start_time,end_time){
 
 
 
-    //    console.log("testu");
+    //    console.log("testu"); 300/150
          //console.log("currently on: "+ this.getCurrentUrl());
       //   console.log("currently on: "+ casper1.getCurrentUrl());
           //console.log("currently on: "+ casper2.getCurrentUrl());
@@ -59,18 +59,33 @@ function kwsolver(fileName,apikey){
             onPageInitialized: function (page) {
                     page.evaluate(function () {
                         window.screen = {
-                            width: 1440,
-                            height: 900
+                            width: 800, //1440
+                            height: 666 //900
                         };
                     });
                 },
                 viewportSize: {
-                    width: 1440,
-                    height: 900
+                    width: 800,
+                    height: 600
                 }
 
             });
-          casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
+    casper2.start("https://www.9kw.eu/index.cgi?action=usercaptchaguthaben&apikey="+apikey).then(function(){
+
+            balance = this.evaluate(function(){
+                return document.querySelector('body').textContent;
+            })
+
+            if (balance<120){
+            console.log("Warning! low captcha credits: "+balance);
+            } else {
+            console.log("current 9kw credits: "+balance);    
+            }
+
+            
+
+        }).thenOpen("https://www.9kw.eu/grafik/form.html").then(function(){
+         // casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
 
                     var captchaid;                  
                       
@@ -250,7 +265,7 @@ casper1.start("http://google.com").then(function(){
 //cleanup previously generated screenshots
 
         this.wait(100,function(){
-            cleaner();
+    cleaner("quiet");
         });
 
 }).thenOpen("https://bitlucky.io/",function(){
@@ -278,7 +293,7 @@ this.wait(1000,function(){
 this.wait(2000,function(){
 
         var selected_captcha = this.evaluate(function(){
-            return document.querySelectorAll('li')[0].textContent;
+            return document.querySelector('a[href="/captcha/SolveMedia"]').textContent;
         });
 
 
@@ -288,7 +303,7 @@ this.wait(2000,function(){
                 this.wait(100, function(){
                     this.evaluate(function(){
                         document.getElementById("dropdownList").click();
-                        document.querySelectorAll('li')[0].querySelector('a').click();    
+                        document.querySelector('a[href="/captcha/SolveMedia"]').click();    
                         });
                 });
 
@@ -400,7 +415,7 @@ this.wait(100,function(){ //wait to start second page
             })
 
 
-            console.log("logged in: '"+logged_in+"'");
+            console.log("logged in: '"+logged_in+"'");          
  
     });
 

@@ -3,16 +3,16 @@ var page = require('webpage').create();
 var datum;
 var current_timestamp;
 var current_balance;
-var type;
+var new_balance;
+var image_url;
 var start_time;
+var type;
 var claimed;
 var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
-var application = 'plansads';
-var cooldown = 10; //cool down in minutes (before next run)
+var application = 'bitgolden';
+var cooldown=5;
 var captcha_timeout = 90000;
-
-
 
 function pusher(claimed,type,start_time,end_time){ 
 
@@ -84,7 +84,7 @@ function kwsolver(fileName,apikey){
             
 
         }).thenOpen("https://www.9kw.eu/grafik/form.html").then(function(){
-      //    casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
+     //     casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
 
                     var captchaid;                  
                       
@@ -169,13 +169,13 @@ function cleaner(mode){
                     )
                 {
                     fs.remove(file);
-                     if (mode!="quiet"){
+                  
+                    if (mode!="quiet"){
                     console.log("Deleted " + file);
                     }
                 }
             }
 }
-
 
 function generateTimestamp(version){
 
@@ -226,10 +226,12 @@ function generateTimestamp(version){
 } 
 
 
+
+/* end of functions */
+
 var casper1 = require('casper').create({
 waitTimeout: 150000, 
-//verbose:true,
-//logLevel:"debug",
+//clientScripts:["generateTimestamp.js"],
 headers: {
         'Accept-Language': 'en'
     },
@@ -248,8 +250,9 @@ onPageInitialized: function (page) {
 
     });
 
+//casper1.options.clientScripts.push('./generateTimestamp.js');
 var casper2done = false;
- start_time=generateTimestamp();
+start_time=generateTimestamp();
 
 console.log("** starting " + application +" **");
 
@@ -262,43 +265,232 @@ casper1.start("http://google.com").then(function(){
 //cleanup previously generated screenshots
 
         this.wait(100,function(){
-
     cleaner("quiet");
-
         });
 
-}).thenOpen("http://www.plansads.com/",function(){
-
+}).thenOpen("https://bitgolden.io/",function(){
 /***********************************************************************/
                               /* login */
 /***********************************************************************/
    
-        this.wait(1000,function(){
-            
-             this.capture(application+" initial "+generateTimestamp()+".png");
-            console.log("Claim [" + generateTimestamp("short")  +"]");
-            
-            this.evaluate(function(bitwallet) {
-                //document.querySelector('input.form-control').value = bitwallet;
-                document.querySelectorAll('input')[2].value = bitwallet;
-              //  document.querySelector('.btn-lg').click(); 
-                //document.getElementById('button').click();
+this.wait(1000,function(){
+    
+    console.log("Login [" + generateTimestamp("short")  +"]");
+    this.capture(application+" initial "+generateTimestamp()+".png");
 
-            },bitwallet);
+   // console.log(bitwallet);
 
-           // this.capture("1.wallet "+generateTimestamp()+".png");
+    this.evaluate(function(bitwallet) {
+        document.querySelector('input[name=address]').value = bitwallet;
+        document.querySelector('a.btn-lg').click(); 
+    },bitwallet);
 
-      // this.capture("bituniverse"+ generateTimestamp()+".png");
+
+});
+
+
+//change captcha to solvemedia
+this.wait(2000,function(){
+
+        var selected_captcha = this.evaluate(function(){
+            return document.querySelector('a[href="/captcha/SolveMedia"]').textContent;
         });
 
-        this.wait(500, function(){
+
+        if (selected_captcha =="SolveMedia"){
+
+
+                this.wait(100, function(){
+                    this.evaluate(function(){
+                        document.getElementById("dropdownList").click();
+                        document.querySelector('a[href="/captcha/SolveMedia"]').click();    
+                        });
+                });
+
+
+                this.wait(2000, function(){
+                    this.evaluate(function(bitwallet) {
+                        document.querySelector('input[name=address]').value = bitwallet;
+                        document.querySelector('a.btn-lg').click(); 
+                    },bitwallet);
+                });
+
+        } 
+
+
+});
+
+
+
+// image_url = application+'file22'+'.png';
+
+this.wait(4000, function(){
+        this.capture(application+" captchaScreen "+generateTimestamp()+".png");
+        console.log("Saving Captcha [" + generateTimestamp("short")  +"]");
+        this.captureSelector(application+'file22.png', '#adcopy-puzzle-image');
+
+});
+
+
+this.wait(100,function(){ //wait to start second page
+
+    kwsolver(application+'file22.png',apikey);
+
+});
+
+
+}).waitFor(function check(){ //wait for kswolver to finish
+    return casper2done;
+
+}).then(function(){ //answer checking module
+
+answer = fs.read(application+'answer.txt');
+
+if (answer==""){
+    claimed = 0;
+    type = "captcha timeout";
+    end_time = generateTimestamp();
+
+        casper1.waitFor(function check() {
+                 return pusher(claimed,type,start_time,generateTimestamp());
+
+        }, function then() {
+           console.log("failed to captcha - timeout. Check captcha id if solved: "+fs.read(application+'captchaid.txt'));
+           casper1.exit();
+        });
+
+}
+
+}).then(function(){
+   //back to the first page
+    
+        this.wait(100,function(){
+
+
+            console.log("Login Answer fill-in [" + generateTimestamp("short")  +"]");            
+          
+            this.capture(application+" loging "+generateTimestamp()+".png");
+            
+            answer = fs.read(application+ 'answer.txt');
+
+            console.log("answering: "+answer);
+
+            this.evaluate(function(answer){
+                        document.getElementById('adcopy_response').value=answer;
+                        document.getElementById('button').click();
+            },answer);
+         
+        });
+
+
+        this.wait(500,function(){
+
+            this.capture(application + " loging "+generateTimestamp()+".png");
+            casper2done = false;
+
+        });
+
+}).then(function(){
+
+/***********************************************************************/
+                              /* claiming */
+/***********************************************************************/
+
+    this.wait(100,function(){
+
+
+        current_balance = this.evaluate(function() {
+            
+                return document.querySelector('span[style="font-size:18px;"]').textContent.match(/\d+/)[0];
+            });
+
+
+        console.log("current balance: "+current_balance);
+
+
+            logged_in = this.evaluate(function(){
+
+                    return document.getElementById('button').textContent.replace(/[^\w\s]/g,'');
+
+            })
+
+
+            console.log("logged in: '"+logged_in+"'");
+
+        });
+ 
+
+}).then(function(){ //answer correctness checking module
+
+      if (logged_in=="Login" || logged_in.match(/([A-Z])\w+/g)=="Login"){
+       claimed = 0;
+       type = "failed to login";
+       end_time = generateTimestamp();
+
+    
+            casper1.waitFor(function check() {
+                     return pusher(claimed,type,start_time,generateTimestamp());
+
+            }, function then() {
+               console.log("failed to login. Check captcha id if correct: "+fs.read(application+'captchaid.txt'));
+               casper1.exit();
+            });
+
+        }
+
+}).then(function(){
+    this.wait(100, function(){
+        fs.remove(application+'captchaid.txt');
+        fs.remove(application+'answer.txt');
+
+
+        this.evaluate(function() {
+            document.getElementById('button').click(); 
+        });
+
+
+    });
+}).then(function(){
+
+
+  /*  this.wait(1000,function(){
+
+            this.evaluate(function() {
+              document.querySelector('.btn-lg').click(); 
+            });
+
+
+    });*/
+
+    
+    this.waitForSelector('.btn.btn-lg.btn-default.btn-block',function(){
+            this.capture(application+" logged "+generateTimestamp()+".png");
+
+            this.evaluate(function() {
+                 document.querySelector('.btn.btn-lg.btn-default.btn-block').click();
+
+              //document.querySelector('.btn-lg').click(); 
+            });
+
+
+    });
+
+    this.wait(2000, function(){
+
+          
+
+            this.capture(application+" claiming "+generateTimestamp()+".png");
+            
             console.log("Saving Captcha [" + generateTimestamp("short")  +"]");
+            
+      //  image_url = application+'file22'+'.png';
             this.captureSelector(application+'file22.png', '#adcopy-puzzle-image');
+      
+      
 
         });
 
-
-       casper1.wait(100,function(){ //wait to start second page
+   casper1.wait(100,function(){ //wait to start second page
 
             kwsolver(application+'file22.png',apikey);
 
@@ -307,103 +499,108 @@ casper1.start("http://google.com").then(function(){
 
 }).waitFor(function check(){ //wait for kswolver to finish
     return casper2done;
-
+   
 }).then(function(){ //answer checking module
 
-    answer = fs.read(application+'answer.txt');
+        answer = fs.read(application+'answer.txt');
 
-    if (answer==""){
-        claimed = 0;
-        type = "captcha timeout";
-        end_time = generateTimestamp();
+        if (answer==""){
+            claimed = 0;
+            type = "captcha timeout";
+            end_time = generateTimestamp();
 
-            casper1.waitFor(function check() {
-                     return pusher(claimed,type,start_time,generateTimestamp());
+                casper1.waitFor(function check() {
+                         return pusher(claimed,type,start_time,generateTimestamp());
 
-            }, function then() {
-               console.log("failed to captcha - timeout. Check captcha id if solved: "+fs.read(application+'captchaid.txt'));
-               casper1.exit();
-            });
+                }, function then() {
+                   console.log("failed to captcha - timeout. Check captcha id if solved: "+fs.read(application+'captchaid.txt'));
+                   casper1.exit();
+                });
 
-    }
+        }
 
 }).then(function(){
-   //back to the first page
+
+     this.wait(1000,function(){
     
-        this.wait(100,function(){
-
-
-            console.log("Claim Answer fill-in [" + generateTimestamp("short")  +"]");            
-          
             this.capture(application+" claiming "+generateTimestamp()+".png");
+
+            console.log("Answer fill-in [" + generateTimestamp("short")  +"]");            
+            //this.capture("answering"+generateTimestamp()+".png");
             
             answer = fs.read(application+'answer.txt');
-
             console.log("answering: "+answer);
 
+
             this.evaluate(function(answer){
-                        document.getElementById('adcopy_response').value=answer;
-                     document.querySelector('.btn-lg').click(); 
+                          document.getElementById('adcopy_response').value=answer;
+                          document.getElementById('button').click();
             },answer);
+
+        })
          
-            this.capture(application+" initial "+generateTimestamp()+".png");
+ }).then(function(){   
 
-        });
+        this.wait(2000,function(){
+                    this.capture(application+" claimed0 "+generateTimestamp()+".png");
 
+                    new_balance = this.evaluate(function() {
+                    
+                        return document.querySelector('span[style="font-size:18px;"]').textContent.match(/\d+/)[0];
+                    });
+                
+                    console.log("current balance: "+new_balance);
 
-        this.wait(500,function(){
+                    /*claimed = this.evaluate(function(){    
+                            return document.querySelector('span[data-notify="message"]').textContent.match(/\d+/)[0];
+                    });
+                    */
 
-            this.capture(application+" claimed "+generateTimestamp()+".png");
+                    claimed = new_balance-current_balance;
 
-         //   fs.remove('captchaid.txt');
-          //  fs.remove('answer.txt');
-            casper2done = false;
+                    //console.log("debug claimed: " + claimed);
 
-        });
+                        if (claimed>0)
+                        {
+                            console.log ("woo hoo! claimed "+ claimed +" satoshi / approx: "+claimed*0.0009749+" PLN");
+                            type ="claimed";
+                        } else {
+                            console.log("something went wrong. no satoshi for you!");
+                            type="failed";
+                        }
+
+            });
 
 }).then(function(){
-
-
-     this.wait(4000,function(){
-
-        claimed = this.evaluate(function(){    
-                return document.querySelector('div.alert-success').textContent.match(/\d+/)[0];
-        });
-
-        this.capture(application+" claimed "+generateTimestamp()+".png");
-
-
-        if (claimed>0)
-        {
-            console.log ("woo hoo! claimed "+ claimed +" satoshi / approx: "+claimed*0.0009749+" PLN");
-            type ="claimed";
-        } else {
-            console.log("something went wrong. no satoshi for you!");
-            console.log("check if captchaid is ok: "+fs.read(application+'captchaid.txt'));
-            type="failed";
-        }
 
         fs.remove(application+'captchaid.txt');
         fs.remove(application+'answer.txt');
         casper2done = false;
-        
-
-     });
-
 
 }).then(function(){
 
-  pusher(claimed,type,start_time,generateTimestamp());
+    pusher(claimed,type,start_time,generateTimestamp());
 
-
+    /*casper1.thenOpen("http://meowbi.nazwa.pl/darth0s/btc/mysql_load.php", {
+    //append claimed value to stats for reporting
+    //add start and end time for script to calculate duration
+          method: 'post',
+          data:{      
+              'value': claimed,
+              'portal': application,
+              'claim': type
+          }
+},claimed,application, type)
+*/
 }).run(function(){
 
 
-   // console.log(claimed+type);
+//    console.log(claimed+type);
 
-        console.log("Operation Done [" + generateTimestamp("short") +"]");
-        console.log("** Next Run [" + generateTimestamp("shift") +"] **");
-   cleaner("quiet");
+    
+    console.log("Operation Done [" + generateTimestamp("short") +"]");
+    console.log("** Next Run [" + generateTimestamp("shift") +"] **");
+    cleaner("quiet");
     this.exit();
 
 });

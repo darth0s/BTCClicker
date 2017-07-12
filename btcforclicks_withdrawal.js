@@ -250,7 +250,7 @@ casper1.start("http://google.com").then(function(){
 
         this.wait(100,function(){
 
-         cleaner();
+         cleaner("quiet");
 
         });
 
@@ -279,7 +279,7 @@ casper1.start("http://google.com").then(function(){
         this.wait(2000,function(){
 
         var selected_captcha = this.evaluate(function(){
-            return document.querySelectorAll('li')[0].textContent;
+             return document.querySelector('a[href="/captcha/SolveMedia"]').textContent;
         });
 
 
@@ -289,7 +289,7 @@ casper1.start("http://google.com").then(function(){
                 this.wait(100, function(){
                     this.evaluate(function(){
                         document.getElementById("dropdownList").click();
-                        document.querySelectorAll('li')[0].querySelector('a').click();    
+                        document.querySelector('a[href="/captcha/SolveMedia"]').click();    
                         });
                 });
 
