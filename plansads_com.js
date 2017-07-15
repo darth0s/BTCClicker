@@ -4,7 +4,8 @@ var datum;
 var current_timestamp;
 var current_balance;
 var type;
-var start_time;
+var msg;
+var start_time=generateTimestamp();
 var claimed;
 var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
@@ -14,16 +15,9 @@ var captcha_timeout = 90000;
 
 
 
-function pusher(claimed,type,start_time,end_time){ 
+function pusher(claimed,type,start_time,end_time,details){ 
 
-
-
-    //    console.log("testu");
-         //console.log("currently on: "+ this.getCurrentUrl());
-      //   console.log("currently on: "+ casper1.getCurrentUrl());
-          //console.log("currently on: "+ casper2.getCurrentUrl());
-
-         console.log('pusher pushed '+claimed+"|"+application+"|"+type+"|"+start_time+"|"+end_time);  
+        // console.log('pusher pushed '+claimed+"|"+application+"|"+type+"|"+details+"|"+start_time+"|"+end_time);  
 
                 casper1.open("http://meowbi.nazwa.pl/darth0s/btc/mysql_load.php", {
           
@@ -33,21 +27,20 @@ function pusher(claimed,type,start_time,end_time){
                       'portal': application,
                       'claim': type,
                       'start_time':start_time,
-                      'end_time':end_time
+                      'end_time':end_time,
+                      'details':details
                      }
 
                  },function(){
-                   console.log("currently on: "+ casper1.getCurrentUrl());
+               //    console.log("currently on: "+ casper1.getCurrentUrl());
                  });
 
     return record_added=1;
-
 }
 
 /***********************************************************************/
     /* 9kw / captcha api part.. probably don't need to change that */
 /***********************************************************************/
-
 function kwsolver(fileName,apikey){
 
         var casper2 = require('casper').create({
@@ -69,6 +62,21 @@ function kwsolver(fileName,apikey){
                 }
 
             });
+
+      casper2.on('error', function(msg,backtrace) {
+        //console.log("I am in error handler!" +msg)
+        pusher(0,'failed',start_time,generateTimestamp(),msg);
+        casper1.exit();
+        casper2.exit();
+      });
+
+      casper2.on('stepTimeout', function(msg,backtrace) {
+        console.log("I am in timeout handler!" +msg)
+        pusher(0,'timeout',start_time,generateTimestamp(),msg);
+        casper1.exit();
+        casper2.exit();
+      });
+
     casper2.start("https://www.9kw.eu/index.cgi?action=usercaptchaguthaben&apikey="+apikey).then(function(){
 
             balance = this.evaluate(function(){
@@ -76,7 +84,7 @@ function kwsolver(fileName,apikey){
             })
 
             if (balance<120){
-            console.log("Warning! low captcha credits: "+balance);
+            this.echo("Warning! low captcha credits: "+balance,'COMMENT');
             } else {
             console.log("current 9kw credits: "+balance);    
             }
@@ -84,7 +92,7 @@ function kwsolver(fileName,apikey){
             
 
         }).thenOpen("https://www.9kw.eu/grafik/form.html").then(function(){
-      //    casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
+     //     casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
 
                     var captchaid;                  
                       
@@ -93,13 +101,13 @@ function kwsolver(fileName,apikey){
                                     'input[name="file-upload-01"]': fileName
                                 }, true);
                                 
-                            console.log("Captcha Pushed [" + generateTimestamp("short") +"]" );
+                            console.log("Captcha Pushed "+application + " [" + generateTimestamp("short") +"]" );
 
                             this.then(function(){
 
                                 this.wait(captcha_timeout,function(){ //wait for captcha to be solved
 
-                                     console.log("Fetching Captcha [" + generateTimestamp("short") +"]" );
+                                     console.log("Fetching Captcha "+application + " [" + generateTimestamp("short") +"]" );
 
                                     captchaid = this.evaluate(function(){
 
@@ -116,7 +124,7 @@ function kwsolver(fileName,apikey){
                                             this.then(function(url){
                                                 url = fs.read(application+'captchaid.txt');
 
-                                              console.log('passed url: '+url);
+                                            //  console.log('passed url: '+url);
                                                 //casper.open(url).then(function(){
                                                     this.open(url).then(function(){   
                                                   //  console.log("currently on: "+ this.getCurrentUrl());
@@ -128,7 +136,7 @@ function kwsolver(fileName,apikey){
                                                         });
 
                                                       //  this.capture("asnwer"+generateTimestamp()+".png");
-                                                        console.log("Fetched answer is: "+ answer);
+                                                 //       console.log("Fetched answer is: "+ answer);
                                                         fs.write(application+'answer.txt',answer, 'w');
 
                                                      // this.capture("9kw1"+generateTimestamp(short)+".png");
@@ -148,12 +156,11 @@ function kwsolver(fileName,apikey){
 
         }).run(function(){
 
-            console.log("Leaving Solver [" + generateTimestamp("short") +"]" );
+            console.log("Leaving Solver "+application + " [" + generateTimestamp("short") +"]" );
             casper2done = true;
         });
 
 }
-
 
 function cleaner(mode){
             var path = ""; // needs trailing slash
@@ -225,6 +232,8 @@ function generateTimestamp(version){
 
 } 
 
+var casper2done = false;
+
 
 var casper1 = require('casper').create({
 waitTimeout: 150000, 
@@ -233,6 +242,7 @@ waitTimeout: 150000,
 headers: {
         'Accept-Language': 'en'
     },
+
 onPageInitialized: function (page) {
         page.evaluate(function () {
             window.screen = {
@@ -248,24 +258,50 @@ onPageInitialized: function (page) {
 
     });
 
-var casper2done = false;
- start_time=generateTimestamp();
 
-console.log("** starting " + application +" **");
+casper1.on('error', function(msg,backtrace) {
+  //console.log("I am in error handler!" +msg)
+  pusher(0,'failed',start_time,generateTimestamp(),msg);
+  casper1.exit();
+});
+
+casper1.on('Timeout', function(msg,backtrace) {
+  console.log("I am in timeout handler!" +msg)
+  pusher(0,'failed',start_time,generateTimestamp(),msg);
+  casper1.exit();
+});
+
+
+
+
 
 /***********************************************************************/
             /* faucet specific navigation starts here */
 /***********************************************************************/
 
-casper1.start("http://google.com").then(function(){
+casper1.start("https://www.google.com/finance?q=BTCPLN").then(function(){
 
-//cleanup previously generated screenshots
+this.echo("** starting " + application +" **",'GREEN_BAR');
 
         this.wait(100,function(){
+           cleaner("quiet");
+         });
 
-    cleaner("quiet");
 
-        });
+          this.wait(2000,function(){
+
+          //  this.capture(application+" plnratio "+generateTimestamp()+".png");
+
+            plnratio=this.evaluate(function(){
+              return document.querySelector('span.bld').textContent.replace(',','').match(/\d+/)[0];
+            });
+
+            plnratio = plnratio/100000000;
+
+          //  console.log("pln ratio: "+plnratio*1000000 + "| satoshi: "+ plnratio);
+          });
+
+//cleanup previously generated screenshotsśs
 
 }).thenOpen("http://www.plansads.com/",function(){
 
@@ -276,7 +312,7 @@ casper1.start("http://google.com").then(function(){
         this.wait(1000,function(){
             
              this.capture(application+" initial "+generateTimestamp()+".png");
-            console.log("Claim [" + generateTimestamp("short")  +"]");
+            console.log("Claim "+application + " [" + generateTimestamp("short")  +"]");
             
             this.evaluate(function(bitwallet) {
                 //document.querySelector('input.form-control').value = bitwallet;
@@ -292,7 +328,7 @@ casper1.start("http://google.com").then(function(){
         });
 
         this.wait(500, function(){
-            console.log("Saving Captcha [" + generateTimestamp("short")  +"]");
+            console.log("Saving Captcha "+application + " [" + generateTimestamp("short")  +"]");
             this.captureSelector(application+'file22.png', '#adcopy-puzzle-image');
 
         });
@@ -318,10 +354,11 @@ casper1.start("http://google.com").then(function(){
         end_time = generateTimestamp();
 
             casper1.waitFor(function check() {
-                     return pusher(claimed,type,start_time,generateTimestamp());
+                     return pusher(claimed,type,start_time,generateTimestamp(),"url: "+fs.read(application+'captchaid.txt'));
 
             }, function then() {
-               console.log("failed to captcha - timeout. Check captcha id if solved: "+fs.read(application+'captchaid.txt'));
+              // console.log("failed to captcha - timeout. Check captcha id if solved: "+fs.read(application+'captchaid.txt'));
+               console.log(application + " failed to captcha - timeout");
                casper1.exit();
             });
 
@@ -333,13 +370,13 @@ casper1.start("http://google.com").then(function(){
         this.wait(100,function(){
 
 
-            console.log("Claim Answer fill-in [" + generateTimestamp("short")  +"]");            
+            console.log("Claim Answer fill-in "+application + " [" + generateTimestamp("short")  +"]");            
           
             this.capture(application+" claiming "+generateTimestamp()+".png");
             
             answer = fs.read(application+'answer.txt');
 
-            console.log("answering: "+answer);
+           // console.log("answering: "+answer);
 
             this.evaluate(function(answer){
                         document.getElementById('adcopy_response').value=answer;
@@ -375,12 +412,15 @@ casper1.start("http://google.com").then(function(){
 
         if (claimed>0)
         {
-            console.log ("woo hoo! claimed "+ claimed +" satoshi / approx: "+claimed*0.0009749+" PLN");
+            this.echo("woo hoo! claimed "+ claimed +" satoshi / approx: "+claimed*plnratio+" PLN",'TRACE');
             type ="claimed";
         } else {
             console.log("something went wrong. no satoshi for you!");
-            console.log("check if captchaid is ok: "+fs.read(application+'captchaid.txt'));
             type="failed";
+            claimed=0;
+            msg = "url: "+fs.read(application+'captchaid.txt')
+            // return pusher(claimed,type,start_time,generateTimestamp(),"url: "+fs.read(application+'captchaid.txt'));
+
         }
 
         fs.remove(application+'captchaid.txt');
@@ -393,7 +433,7 @@ casper1.start("http://google.com").then(function(){
 
 }).then(function(){
 
-  pusher(claimed,type,start_time,generateTimestamp());
+  pusher(claimed,type,start_time,generateTimestamp(),msg);
 
 
 }).run(function(){
@@ -401,8 +441,8 @@ casper1.start("http://google.com").then(function(){
 
    // console.log(claimed+type);
 
-        console.log("Operation Done [" + generateTimestamp("short") +"]");
-        console.log("** Next Run [" + generateTimestamp("shift") +"] **");
+        console.log("Operation Done "+application + " [" + generateTimestamp("short") +"]");
+        console.log("** Next Run "+application + " [" + generateTimestamp("shift") +"] **");
    cleaner("quiet");
     this.exit();
 
