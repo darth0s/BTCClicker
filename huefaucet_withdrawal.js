@@ -13,6 +13,9 @@ var application = 'huefaucet_withdraw';
 var cooldown=60;
 var captcha_timeout = 90000;
 
+var captcha_wait=0;
+var captcha_fetched;
+
 
 
 function pusher(claimed,type,start_time,end_time,details){ 
@@ -94,7 +97,7 @@ function kwsolver(fileName,apikey){
         }).thenOpen("https://www.9kw.eu/grafik/form.html").then(function(){
      //     casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
 
-                    var captchaid;                  
+                            var captchaid;                  
                       
                             this.fillSelectors('form[action="/index.cgi"]', {
                                     'input[name="apikey"]':apikey,
@@ -105,54 +108,71 @@ function kwsolver(fileName,apikey){
 
                             this.then(function(){
 
-                                this.wait(captcha_timeout,function(){ //wait for captcha to be solved
+                                captchaid = this.evaluate(function(){
 
-                                     console.log("Fetching Captcha "+application + " [" + generateTimestamp("short") +"]" );
-
-                                    captchaid = this.evaluate(function(){
-
-                                            return document.querySelector('body').textContent;
-
-                                        });
-                                    
-                                    url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&prio=10&apikey='+apikey+'&id='+captchaid;
-                                  
-                                    fs.write(application+'captchaid.txt',url, 'w');
-
-                                 
-
-                                            this.then(function(url){
-                                                url = fs.read(application+'captchaid.txt');
-
-                                            //  console.log('passed url: '+url);
-                                                //casper.open(url).then(function(){
-                                                    this.open(url).then(function(){   
-                                                  //  console.log("currently on: "+ this.getCurrentUrl());
-                                                       
-                                                        answer = this.evaluate(function(){
-
-                                                            return document.querySelector('body').textContent;
-
-                                                        });
-
-                                                      //  this.capture("asnwer"+generateTimestamp()+".png");
-                                                 //       console.log("Fetched answer is: "+ answer);
-                                                        fs.write(application+'answer.txt',answer, 'w');
-
-                                                     // this.capture("9kw1"+generateTimestamp(short)+".png");
-
-                                                        
-                                                    });
-                                               // .waitForSelectorTextChange('body',function(){
-                                                 //   console.log("answer provided");
-                                               // }) ;
-                                                
-                                            }) ;
+                                return document.querySelector('body').textContent;
 
                                 });
 
-                           });
+                                url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&prio=10&apikey='+apikey+'&id='+captchaid;
 
+                                fs.write(application+'captchaid.txt',url, 'w');
+                            });
+
+                            }).then(function(){
+                              //    console.log("opening url: "+url);
+
+                                  this.open(url);
+
+                              }).then(function(){
+
+                        //    }).then(function(){
+                            //       console.log("currently on: "+ this.getCurrentUrl());
+                                   console.log("Check start "+application + " [" + generateTimestamp("short") +"]" );
+                            }).then(function(){
+                                                
+
+                                  function issuccess(){
+                                    casper2.then(function(){
+                                   
+                                        this.reload(function(){
+
+
+                                            answer = this.evaluate(function(){
+
+                                                        return document.querySelector('body').textContent;
+
+                                                    });
+
+                                          //  console.log("current_answer: "+ answer);
+                                            
+                                                 if(answer=="" && captcha_wait < captcha_timeout/1000 ) {
+                                                 //   console.log("waiting one more");
+                                                        this.wait(5000,function(){
+                                                            captcha_wait = captcha_wait + 5; //cumulative captcha wait in seconds
+                                                           // console.log("waited: "+ captcha_wait + " seconds");
+                                                            issuccess();
+                                                        })
+                                                 } else {
+
+                                                    if(captcha_wait >= captcha_timeout/1000) {captcha_fetched=0;} else {captcha_fetched=1;}
+
+                                                        console.log("Check Finish "+application + " [" + generateTimestamp("short") +"]" );
+                                                       // console.log("Fetched answer is: "+ answer);
+                                                        fs.write(application+'answer.txt',answer, 'w');                                                                                                                                                           
+                                                }
+
+
+
+                                        });
+
+                                    });
+                                }
+
+
+                                issuccess();
+
+                                     
 
         }).run(function(){
 
@@ -160,7 +180,9 @@ function kwsolver(fileName,apikey){
             casper2done = true;
         });
 
+
 }
+
 
 function cleaner(mode){
             var path = ""; // needs trailing slash
