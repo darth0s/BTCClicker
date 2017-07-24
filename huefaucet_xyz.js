@@ -600,6 +600,12 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
     
     pusher(claimed,type,start_time,generateTimestamp(),msg);
 
+}).then(function(){
+
+    if (type=='claimed'){
+      pusher(new_balance,'balance',start_time,generateTimestamp(),'');
+    }
+
 }).run(function(){
 
 

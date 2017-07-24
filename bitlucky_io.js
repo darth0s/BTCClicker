@@ -645,6 +645,11 @@ this.wait(100,function(){ //wait to start second page
 
     pusher(claimed,type,start_time,generateTimestamp(),msg);
 
+}).then(function(){
+
+  if (type=='claimed'){
+      pusher(new_balance,'balance',start_time,generateTimestamp(),'');
+    }
 
 
 }).run(function(){

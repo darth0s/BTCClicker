@@ -581,6 +581,10 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
     pusher(claimed,type,start_time,generateTimestamp(),msg);
 
+    if (type=='withdrawn'){
+      pusher(new_balance,'balance',start_time,generateTimestamp(),'');
+    }
+
 }).run(function(){
 
 

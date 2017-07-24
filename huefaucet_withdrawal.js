@@ -280,6 +280,7 @@ onPageInitialized: function (page) {
 
     });
 
+
 casper1.on('error', function(msg,backtrace) {
   //console.log("I am in error handler!" +msg)
   pusher(0,'failed',start_time,generateTimestamp(),msg);
@@ -296,6 +297,8 @@ casper1.on('Timeout', function(msg,backtrace) {
 var casper2done = false;
 start_time=generateTimestamp();
 
+
+
 /***********************************************************************/
             /* faucet specific navigation starts here */
 /***********************************************************************/
@@ -310,7 +313,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
           this.wait(2000,function(){
 
-         //   this.capture(application+" plnratio "+generateTimestamp()+".png");
+           // this.capture(application+" plnratio "+generateTimestamp()+".png");
 
             plnratio=this.evaluate(function(){
               return document.querySelector('span.bld').textContent.replace(',','').match(/\d+/)[0];
@@ -428,7 +431,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
             
             answer = fs.read(application+'answer.txt');
 
-         //   console.log("answering: "+answer);
+          //  console.log("answering: "+answer);
 
             this.evaluate(function(answer){
                 document.getElementById('adcopy_response').value=answer;
@@ -445,7 +448,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
         });
 
-}).thenOpen("https://bitlucky.io/account",function(){
+}).thenOpen("https://huefaucet.xyz/account",function(){
 
 /***********************************************************************/
                               /* claiming */
@@ -458,7 +461,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
             });
 
-           // console.log("current balance: "+current_balance);
+       //     console.log("current balance: "+current_balance);
 
              logged_in = this.evaluate(function(){
 
@@ -548,8 +551,8 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
                          return pusher(claimed,type,start_time,generateTimestamp(),"url: "+fs.read(application+'captchaid.txt'));
 
                 }, function then() {
-                 //  console.log("failed to captcha - timeout. Check captcha id if solved: "+fs.read(application+'captchaid.txt'));
-                  console.log(application + " failed to captcha - timeout");
+                   //console.log("failed to captcha - timeout. Check captcha id if solved: "+fs.read(application+'captchaid.txt'));
+                   console.log(application + " failed to captcha - timeout");
                    casper1.exit();
                 });
 
@@ -565,7 +568,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
             //this.capture("answering"+generateTimestamp()+".png");
             
             answer = fs.read(application+'answer.txt');
-           // console.log("answering: "+answer);
+        //    console.log("answering: "+answer);
 
 
             this.evaluate(function(answer){
@@ -583,7 +586,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
                 return document.querySelector('span[style="font-size:18px;"]').textContent.match(/\d+/)[0];
             });
 
-      //  console.log("new balance: "+new_balance);
+       // console.log("new balance: "+new_balance);
         this.capture(application+" withdrawn "+generateTimestamp()+".png");
 
         claimed=current_balance;
@@ -596,7 +599,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
         //if (claimed>0)
         if (new_balance==0)
         {
-           this.echo("woo hoo! claimed "+ claimed +" satoshi / approx: "+claimed*plnratio+" PLN",'TRACE');
+            this.echo("woo hoo! claimed "+ claimed +" satoshi / approx: "+claimed*plnratio+" PLN",'TRACE');
             type ="withdrawn";
         } else {
             console.log("something went wrong. no satoshi withdrawn!");
@@ -616,6 +619,11 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 }).then(function(){
 
     pusher(claimed,type,start_time,generateTimestamp(),msg);
+
+  if (type=='withdrawn'){
+      pusher(new_balance,'balance',start_time,generateTimestamp(),'');
+    }
+
 
 }).run(function(){
 

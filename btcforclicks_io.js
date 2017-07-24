@@ -641,17 +641,12 @@ if (answer==""){
 
     pusher(claimed,type,start_time,generateTimestamp(),msg);
 
-    /*casper1.thenOpen("http://meowbi.nazwa.pl/darth0s/btc/mysql_load.php", {
-    //append claimed value to stats for reporting
-    //add start and end time for script to calculate duration
-          method: 'post',
-          data:{      
-              'value': claimed,
-              'portal': application,
-              'claim': type
-          }
-},claimed,application, type)
-*/
+}).then(function(){
+
+  if (type=='claimed'){
+      pusher(new_balance,'balance',start_time,generateTimestamp(),'');
+    }
+
 }).run(function(){
 
 
