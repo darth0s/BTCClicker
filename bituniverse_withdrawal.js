@@ -11,8 +11,7 @@ var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
 var application = 'bituniverse_withdraw';
 var cooldown=60;
-var captcha_timeout = 90000;
-
+var captcha_timeout = 200000;
 var captcha_wait=0;
 var captcha_fetched;
 
@@ -94,7 +93,8 @@ function kwsolver(fileName,apikey){
 
             
 
-        }).thenOpen("https://www.9kw.eu/grafik/form.html").then(function(){
+        }).thenOpen("https://www.9kw.eu/grafik/form.html")
+        .then(function(){
      //     casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
 
                             var captchaid;                  
@@ -103,7 +103,15 @@ function kwsolver(fileName,apikey){
                                     'input[name="apikey"]':apikey,
                                     'input[name="file-upload-01"]': fileName
                                 }, true);
-                                
+
+        }).then(function(){
+
+                            this.evaluate(function(){
+                                document.getElementById("newsubmit").click();
+                            });
+
+                            this.capture(application+" captchaformfilled "+generateTimestamp()+".png");
+
                             console.log("Captcha Pushed "+application + " [" + generateTimestamp("short") +"]" );
 
                             this.then(function(){
@@ -113,6 +121,8 @@ function kwsolver(fileName,apikey){
                                 return document.querySelector('body').textContent;
 
                                 });
+
+                            //   console.log("evaluating captchaid "+captchaid);
 
                                 url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&prio=10&apikey='+apikey+'&id='+captchaid;
 
@@ -260,7 +270,7 @@ function generateTimestamp(version){
 /* end of functions */
 
 var casper1 = require('casper').create({
-waitTimeout: 150000, 
+waitTimeout: 80000+captcha_timeout, 
 //clientScripts:["generateTimestamp.js"],
 headers: {
         'Accept-Language': 'en'
@@ -390,7 +400,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
             console.log("Login Answer fill-in "+application + " [" + generateTimestamp("short")  +"]");            
           
-            this.capture(application+" loging "+generateTimestamp()+".png");
+            this.capture(application+" loging1 "+generateTimestamp()+".png");
             
             answer = fs.read(application+'answer.txt');
 
@@ -398,15 +408,20 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
             this.evaluate(function(answer){
                 document.getElementById('adcopy_response').value=answer;
-                document.getElementById('button').click();
+             //   document.getElementById('button').click();
             },answer);
          
         });
 
+        this.wait(100,function(){
+            this.evaluate(function(){
+                document.getElementById('button').click();
+            });
+        });
 
         this.wait(500,function(){
 
-            this.capture(application+" loging "+generateTimestamp()+".png");
+            this.capture(application+" loging2 "+generateTimestamp()+".png");
             casper2done = false;
 
         });
@@ -423,18 +438,26 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
                 return document.querySelector('span[style="font-size:18px;"]').textContent.match(/\d+/)[0];
             });
 
+
+            if (current_balance ==0) {
+              console.log("there's nothing to withdraw");
+             casper1.exit();
+          }
          //   console.log("current balance: "+current_balance);
 
              logged_in = this.evaluate(function(){
 
-                return document.querySelector('.btn-lg').textContent; //if logged, then there's no -lg button on this page
+                return document.querySelector('.btn-lg').textContent.match(/([A-Z])\w+/g); //if logged, then there's no -lg button on this page
 
             })
+
+            this.capture(application+" logged "+generateTimestamp()+".png"); //debug
+             console.log("logged_in: "+logged_in); //debug
     });
 
 }).then(function(){ //answer correctness checking module
 
-      if (logged_in=="Login" || logged_in.match(/([A-Z])\w+/g)=="Login"){
+      if (logged_in=="Login"){
        claimed = 0;
        type = "failed to login";
        end_time = generateTimestamp();

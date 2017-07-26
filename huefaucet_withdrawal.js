@@ -11,7 +11,7 @@ var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
 var application = 'huefaucet_withdraw';
 var cooldown=60;
-var captcha_timeout = 90000;
+var captcha_timeout = 200000;
 
 var captcha_wait=0;
 var captcha_fetched;
@@ -94,7 +94,8 @@ function kwsolver(fileName,apikey){
 
             
 
-        }).thenOpen("https://www.9kw.eu/grafik/form.html").then(function(){
+        }).thenOpen("https://www.9kw.eu/grafik/form.html")
+        .then(function(){
      //     casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
 
                             var captchaid;                  
@@ -103,7 +104,15 @@ function kwsolver(fileName,apikey){
                                     'input[name="apikey"]':apikey,
                                     'input[name="file-upload-01"]': fileName
                                 }, true);
-                                
+
+        }).then(function(){
+
+                            this.evaluate(function(){
+                                document.getElementById("newsubmit").click();
+                            });
+
+                            this.capture(application+" captchaformfilled "+generateTimestamp()+".png");
+
                             console.log("Captcha Pushed "+application + " [" + generateTimestamp("short") +"]" );
 
                             this.then(function(){
@@ -113,6 +122,8 @@ function kwsolver(fileName,apikey){
                                 return document.querySelector('body').textContent;
 
                                 });
+
+                            //   console.log("evaluating captchaid "+captchaid);
 
                                 url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&prio=10&apikey='+apikey+'&id='+captchaid;
 
@@ -259,7 +270,7 @@ function generateTimestamp(version){
 /* end of functions */
 
 var casper1 = require('casper').create({
-waitTimeout: 150000, 
+waitTimeout: 80000+captcha_timeout, 
 //clientScripts:["generateTimestamp.js"],
 headers: {
         'Accept-Language': 'en'
