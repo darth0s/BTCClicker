@@ -579,8 +579,19 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
             this.evaluate(function(answer){
                           document.getElementById('adcopy_response').value=answer;
-                            document.getElementById('button').click();
+                            
             },answer);
+             });
+
+
+    this.wait(1000,function(){
+
+            this.evaluate(function(){
+                       
+                            document.getElementById('button').click();
+            });
+         
+
          
         });
 
@@ -626,6 +637,8 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
     pusher(claimed,type,start_time,generateTimestamp(),msg);
 
+}).then(function(){
+  
     if (type=='withdrawn'){
       pusher(new_balance,'balance',start_time,generateTimestamp(),'');
     }

@@ -607,8 +607,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
     
 
      this.wait(2000,function(){
-            new_balance = this.evaluate(function() {
-            
+            new_balance = this.evaluate(function() {  
                 return document.querySelector('span[style="font-size:18px;"]').textContent.match(/\d+/)[0];
             });
 
@@ -647,6 +646,9 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 }).then(function(){
 
     pusher(claimed,type,start_time,generateTimestamp(),msg);
+
+
+}).then(function(){
 
     if (type=='withdrawn'){
       pusher(new_balance,'balance',start_time,generateTimestamp(),'');

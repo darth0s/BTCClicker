@@ -584,8 +584,17 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
             this.evaluate(function(answer){
                           document.getElementById('adcopy_response').value=answer;
-                            document.getElementById('button').click();
+      
             },answer);
+          
+           });
+
+
+ this.wait(100,function(){
+                 this.evaluate(function(){
+                          
+                            document.getElementById('button').click();
+            });
          
         });
 
