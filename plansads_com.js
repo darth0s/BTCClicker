@@ -179,7 +179,7 @@ casper2.then(function(){
 }
 
 
-function pusher(claimed,type,start_time,end_time,details){ 
+function pusher(claimed,type,start_time,end_time,details,application){ 
 
         // console.log('pusher pushed '+claimed+"|"+application+"|"+type+"|"+details+"|"+start_time+"|"+end_time);  
 
@@ -229,14 +229,14 @@ function kwsolver(fileName,apikey){
 
       casper2.on('error', function(msg,backtrace) {
         //console.log("I am in error handler!" +msg)
-        pusher(0,'failed',start_time,generateTimestamp(),msg);
+        pusher(0,'failed',start_time,generateTimestamp(),msg,application);
         casper1.exit();
         casper2.exit();
       });
 
       casper2.on('Timeout', function(msg,backtrace) {
         console.log("I am in timeout handler!" +msg)
-        pusher(0,'failed',start_time,generateTimestamp(),msg);
+        pusher(0,'failed',start_time,generateTimestamp(),msg,application);
         casper1.exit();
         casper2.exit();
       });
@@ -454,13 +454,13 @@ onPageInitialized: function (page) {
 
 casper1.on('error', function(msg,backtrace) {
   //console.log("I am in error handler!" +msg)
-  pusher(0,'failed',start_time,generateTimestamp(),msg);
+  pusher(0,'failed',start_time,generateTimestamp(),msg,application);
   casper1.exit();
 });
 
 casper1.on('Timeout', function(msg,backtrace) {
   console.log("I am in timeout handler!" +msg)
-  pusher(0,'failed',start_time,generateTimestamp(),msg);
+  pusher(0,'failed',start_time,generateTimestamp(),msg,application);
   casper1.exit();
 });
 
@@ -537,7 +537,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
         console.log("evaluating fail"); //debug
 
             casper1.waitFor(function check() {
-                     return pusher(claimed,type,start_time,generateTimestamp(),"url: "+fs.read(application+'captchaid.txt'));
+                     return pusher(claimed,type,start_time,generateTimestamp(),"url: "+fs.read(application+'captchaid.txt'),application);
 
             }, function then() {
               // console.log("failed to captcha - timeout. Check captcha id if solved: "+fs.read(application+'captchaid.txt'));
@@ -595,7 +595,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
 }).then(function(){
 
-  pusher(claimed,type,start_time,generateTimestamp(),msg);
+  pusher(claimed,type,start_time,generateTimestamp(),msg,application);
 
 
 }).run(function(){

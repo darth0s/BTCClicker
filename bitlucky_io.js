@@ -18,7 +18,7 @@ var captcha_timeout = 200000;
 var captcha_wait=0;
 var captcha_fetched;
 
-function pusher(claimed,type,start_time,end_time,details){ 
+function pusher(claimed,type,start_time,end_time,details,application){ 
 
 //   pusher(new_balance,'balance',start_time,generateTimestamp(),'');
 
@@ -75,14 +75,14 @@ function kwsolver(fileName,apikey){
 
       casper2.on('error', function(msg,backtrace) {
         //console.log("I am in error handler!" +msg)
-        pusher(0,'failed',start_time,generateTimestamp(),msg);
+        pusher(0,'failed',start_time,generateTimestamp(),msg,application);
         casper1.exit();
         casper2.exit();
       });
 
       casper2.on('Timeout', function(msg,backtrace) {
         console.log("I am in timeout handler!" +msg)
-        pusher(0,'failed',start_time,generateTimestamp(),msg);
+        pusher(0,'failed',start_time,generateTimestamp(),msg,application);
         casper1.exit();
         casper2.exit();
       });
@@ -298,13 +298,13 @@ onPageInitialized: function (page) {
 
 casper1.on('error', function(msg,backtrace) {
   //console.log("I am in error handler!" +msg)
-  pusher(0,'failed',start_time,generateTimestamp(),msg);
+  pusher(0,'failed',start_time,generateTimestamp(),msg,application);
   casper1.exit();
 });
 
 casper1.on('Timeout', function(msg,backtrace) {
   console.log("I am in timeout handler!" +msg)
-  pusher(0,'failed',start_time,generateTimestamp(),msg);
+  pusher(0,'failed',start_time,generateTimestamp(),msg,application);
   casper1.exit();
 });
 
@@ -426,7 +426,7 @@ this.wait(100,function(){ //wait to start second page
             end_time = generateTimestamp();
 
                 casper1.waitFor(function check() {
-                         return pusher(claimed,type,start_time,generateTimestamp(),"url: "+fs.read(application+'captchaid.txt'));
+                         return pusher(claimed,type,start_time,generateTimestamp(),"url: "+fs.read(application+'captchaid.txt'),application);
 
                 }, function then() {
                   // console.log("failed to captcha - timeout. Check captcha id if solved: "+fs.read(application+'captchaid.txt'));
@@ -502,7 +502,7 @@ this.wait(100,function(){ //wait to start second page
 
     
             casper1.waitFor(function check() {
-                     return pusher(claimed,type,start_time,generateTimestamp(),"url: "+fs.read(application+'captchaid.txt'));
+                     return pusher(claimed,type,start_time,generateTimestamp(),"url: "+fs.read(application+'captchaid.txt'),application);
 
             }, function then() {
               console.log(application + " failed to login");
@@ -588,7 +588,7 @@ this.wait(100,function(){ //wait to start second page
         end_time = generateTimestamp();
 
             casper1.waitFor(function check() {
-            return pusher(claimed,type,start_time,generateTimestamp(),"url: "+fs.read(application+'captchaid.txt'));
+            return pusher(claimed,type,start_time,generateTimestamp(),"url: "+fs.read(application+'captchaid.txt'),application);
 
             }, function then() {
             //   console.log("failed to captcha - timeout. Check captcha id if solved: "+fs.read(application+'captchaid.txt'));
@@ -660,7 +660,7 @@ this.wait(100,function(){ //wait to start second page
 
 }).then(function(){
 
-    pusher(claimed,type,start_time,generateTimestamp(),msg);
+    pusher(claimed,type,start_time,generateTimestamp(),msg,application);
 
 }).then(function(){
 
@@ -668,7 +668,7 @@ this.wait(100,function(){ //wait to start second page
 
   if (type=='claimed'){
   //   console.log("evaluating balance push");
-      pusher(new_balance,'balance',start_time,generateTimestamp(),'');
+      pusher(new_balance,'balance',start_time,generateTimestamp(),'',application);
     }
 
 
