@@ -8,6 +8,7 @@ var image_url;
 var start_time;
 var record_added;
 var type;
+var push_message;
 var msg;
 var claimed;
 var captchaid;       
@@ -20,14 +21,16 @@ var captcha_timeout = 200000;
 var captcha_wait=0;
 var captcha_fetched;
 
+function pusher(claimed,type,start_time,end_time,details,application,operation,next_run_time){ 
 
-
-function pusher(claimed,type,start_time,end_time,details,application){ 
+//   pusher(new_balance,'balance',start_time,generateTimestamp(),'');
 
         // console.log('pusher pushed '+claimed+"|"+application+"|"+type+"|"+details+"|"+start_time+"|"+end_time);  
 
+
+
                 casper1.open("http://meowbi.nazwa.pl/darth0s/btc/mysql_load.php", {
-          
+
                   method: 'post',
                   data:{      
                       'value': claimed,
@@ -35,16 +38,22 @@ function pusher(claimed,type,start_time,end_time,details,application){
                       'claim': type,
                       'start_time':start_time,
                       'end_time':end_time,
-                      'details':details
+                      'details':details,
+                      'operation':operation,
+                      'next_run_time':next_run_time
                      }
 
                  },function(){
+                   push_message = this.evaluate(function(){
+                      document.querySelector('body').textContent;
+                    });
+
+                      console.log("push message: "+push_message);
                //    console.log("currently on: "+ casper1.getCurrentUrl());
                  });
-
     return record_added=1;
-}
 
+}
 /***********************************************************************/
     /* 9kw / captcha api part.. probably don't need to change that */
 /***********************************************************************/
@@ -617,16 +626,32 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
       pusher(new_balance,'balance',start_time,generateTimestamp(),'',application);
     }
 
+}).then(function(){
+
+    console.log("Operation Done "+application + " [" + generateTimestamp("short") +"]");
+
+  
+    if (type=="claimed"){
+        console.log("** Next Run "+application + " [" + generateTimestamp("shift") +"] **");
+     
+         pusher(666,'',start_time,generateTimestamp(),'',application,"push",44);
+         console.log("push message: "+push_message);
+
+      } else {
+        console.log("** Next Run "+application + " [" + generateTimestamp("short") +"] **");      
+          pusher(666,'',start_time,generateTimestamp(),'',application,"push",33);
+          console.log("push message: "+push_message);
+
+      }
+
+
+  casper1.capture(application+" nextrun "+generateTimestamp()+".png");
+  this.capture(application+" nextrunaa "+generateTimestamp()+".png");
 
 }).run(function(){
-
-
-//    console.log(claimed+type);
-    this.capture(application+" operationDone "+generateTimestamp()+".png");
-    console.log("Operation Done "+application + " [" + generateTimestamp("short") +"]");
-    console.log("** Next Run "+application + " [" + generateTimestamp("shift") +"] **");
-    
-    cleaner("quiet");
+  
+  
+  //  cleaner("quiet");
     this.exit();
 
 });
