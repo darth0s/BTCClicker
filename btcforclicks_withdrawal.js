@@ -518,7 +518,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
     this.wait(1000,function(){
 
         this.evaluate(function(){
-
+//document.querySelectorAll("input[type=radio]")[0].click()
             document.querySelector('input[value="FaucetHub.io"]').click();
             this.capture(application+" withdrawing "+generateTimestamp()+".png");
 
@@ -566,38 +566,47 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
 }).then(function(){
 
-     this.wait(100,function(){
-    
-        this.capture(application+" claiming "+generateTimestamp()+".png");
+   this.wait(100,function(){
+  
+          this.capture(application+" claiming "+generateTimestamp()+".png");
 
-            console.log("Answer fill-in "+application + " [" + generateTimestamp("short")  +"]");            
-            //this.capture("answering"+generateTimestamp()+".png");
-            
-            answer = fs.read(application+'answer.txt');
-         //   console.log("answering: "+answer);
+          console.log("Answer fill-in "+application + " [" + generateTimestamp("short")  +"]");            
+        
+          answer = fs.read(application+'answer.txt');
+  
+          this.evaluate(function(answer){
 
+             document.getElementById('adcopy_response').value=answer;
+                          
+          },answer);
+    });
 
-            this.evaluate(function(answer){
-                          document.getElementById('adcopy_response').value=answer;
-                            
-            },answer);
-             });
-
+}).then(function(){
 
     this.wait(1000,function(){
 
-            this.evaluate(function(){
-                       
-                            document.getElementById('button').click();
-            });
+        this.click('#button');
+//
+  //        this.evaluate(function(){
+   //         document.getElementById('button').click();
+    //      });
+       
          
-
-         
-        });
+    });
 
 }).then(function(){
 
      this.wait(2000,function(){
+
+
+  datum = this.evaluate(function() { 
+              return document.querySelector('body').innerHTML;
+               });
+
+    fs.write('dumpu.html', datum, 'w');
+
+
+
             new_balance = this.evaluate(function() {
             
                 return document.querySelector('span[style="font-size:18px;"]').textContent.match(/\d+/)[0];

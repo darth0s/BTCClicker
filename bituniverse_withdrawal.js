@@ -628,7 +628,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
    // this.capture("operationDone "+generateTimestamp()+".png");
     console.log("Operation Done "+application + " [" + generateTimestamp("short") +"]");
     console.log("** Next Run "+application + " [" + generateTimestamp("shift") +"] **");
-    cleaner("quiet");
+//    cleaner("quiet");
     this.exit();
 
 });

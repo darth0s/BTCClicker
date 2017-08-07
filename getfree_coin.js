@@ -13,8 +13,8 @@ var claimed;
 var captchaid;       
 var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
-var application = 'topbtcsites';
-var cooldown=1440;
+var application = 'getfree_coin_BCC';
+var cooldown=5;
 var captcha_timeout = 200000;
 
 var captcha_wait=0;
@@ -314,7 +314,7 @@ start_time=generateTimestamp();
             /* faucet specific navigation starts here */
 /***********************************************************************/
 
-casper1.start("https://www.google.com/finance?q=BTCPLN").then(function(){
+casper1.start("https://www.google.com/finance?q=BCCPLN").then(function(){
 this.echo("** starting " + application +" **",'GREEN_BAR');
 
         this.wait(100,function(){
@@ -337,35 +337,44 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
 //cleanup previously generated screenshots
 
-}).thenOpen("https://topbtcsites.com/freebitcoin/",function(){
+}).thenOpen("http://getfree.co.in/bcash/",function(){
 /***********************************************************************/
                               /* login */
 /***********************************************************************/
    
-        this.wait(10000,function(){
+        this.wait(2000,function(){
             
             console.log("Opening "+application + " [" + generateTimestamp("short")  +"]");
             this.capture(application+" initial "+generateTimestamp()+".png");
 
            // console.log(bitwallet);
 
-           //close popup window
-            this.evaluate(function(){
-              document.querySelector('button.ad_close').click();
-            });
-
+        
 
             this.evaluate(function(bitwallet) {
-                document.querySelectorAll('input.form-control')[1].value = bitwallet;
+                document.querySelector('input.form-control').value = bitwallet;
                // document.querySelector('.btn-lg').click(); 
             },bitwallet);
 
       // this.capture("bituniverse"+ generateTimestamp()+".png");
         });
 
+}).then(function(){ //answer checking module
+
+      this.wait(10000,function(){
+            
+         this.evaluate(function() {
+                document.querySelector('input[type=submit]').click();
+               // document.querySelector('.btn-lg').click(); 
+            });
+
+      // this.capture("bituniverse"+ generateTimestamp()+".png");
+        });
 
 
-        this.wait(4000, function(){
+}).then(function(){ //answer checking module
+
+        this.wait(7000, function(){
             this.capture(application+" captchaScreen "+generateTimestamp()+".png");
             console.log("Saving Captcha "+application + " [" + generateTimestamp("short")  +"]");
             this.captureSelector(application+'file22.png', '#adcopy-puzzle-image');
@@ -441,8 +450,9 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
           this.wait(1000,function(){
 
-            this.evaluate(function() {           
-                document.querySelector('.btn-lg').click(); 
+            this.evaluate(function() {  
+                document.querySelector('input[type=submit]').click();         
+            //    document.querySelector('.btn-lg').click(); 
             });
 
         })

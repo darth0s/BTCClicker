@@ -9,6 +9,8 @@ var start_time;
 var type;
 var msg;
 var claimed;
+var next_run_time
+
 var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
 var application = 'bitlucky';
@@ -18,14 +20,16 @@ var captcha_timeout = 200000;
 var captcha_wait=0;
 var captcha_fetched;
 
-function pusher(claimed,type,start_time,end_time,details,application){ 
+function pusher(claimed,type,start_time,end_time,details,application,operation,next_run_time){ 
 
 //   pusher(new_balance,'balance',start_time,generateTimestamp(),'');
 
         // console.log('pusher pushed '+claimed+"|"+application+"|"+type+"|"+details+"|"+start_time+"|"+end_time);  
 
+
+
                 casper1.open("http://meowbi.nazwa.pl/darth0s/btc/mysql_load.php", {
-          
+
                   method: 'post',
                   data:{      
                       'value': claimed,
@@ -33,7 +37,9 @@ function pusher(claimed,type,start_time,end_time,details,application){
                       'claim': type,
                       'start_time':start_time,
                       'end_time':end_time,
-                      'details':details
+                      'details':details,
+                      'operation':operation,
+                      'next_run_time':next_run_time
                      }
 
                  },function(){
@@ -45,7 +51,7 @@ function pusher(claimed,type,start_time,end_time,details,application){
                //    console.log("currently on: "+ casper1.getCurrentUrl());
                  });
 
-    return record_added=1;
+
 }
 
 /***********************************************************************/
@@ -242,6 +248,8 @@ function generateTimestamp(version){
 
 
 
+
+
   var shifteddate = new Date();
   shifteddate.setTime(currentdate.getTime()+(cooldown*60*1000));
 
@@ -401,8 +409,8 @@ this.wait(4000, function(){
         this.capture(application+" captchaScreen "+generateTimestamp()+".png");
         console.log("Saving Captcha "+application + " [" + generateTimestamp("short")  +"]");
         this.captureSelector(application+'file22.png', '#adcopy-puzzle-image');
-
 });
+
 
 
 this.wait(100,function(){ //wait to start second page
@@ -671,12 +679,33 @@ this.wait(100,function(){ //wait to start second page
       pusher(new_balance,'balance',start_time,generateTimestamp(),'',application);
     }
 
+}).then(function(){
+
+    console.log("Operation Done "+application + " [" + generateTimestamp("short") +"]");
+
+  
+    if (type=="claimed"){
+        console.log("** Next Run "+application + " [" + generateTimestamp("shift") +"] **");
+        
+         console.log(666+''+start_time+generateTimestamp()+'',application+'push'+Date.now()+(cooldown*60*1000));
+
+         pusher(666,'',start_time,generateTimestamp(),'',application,'push', Date.now()+(cooldown*60*1000));
+
+      } else {
+        console.log("** Next Run "+application + " [" + generateTimestamp("short") +"] **");
+        
+          pusher(666,'',start_time,generateTimestamp(),'',application,'push', Date.now());
+
+      }
+
+
+  casper1.capture(application+" nextrun "+generateTimestamp()+".png");
+  this.capture(application+" nextrunaa "+generateTimestamp()+".png");
 
 }).run(function(){
   
-    console.log("Operation Done "+application + " [" + generateTimestamp("short") +"]");
-    console.log("** Next Run "+application + " [" + generateTimestamp("shift") +"] **");
-    cleaner("quiet");
+  
+  //  cleaner("quiet");
     this.exit();
 
 });
