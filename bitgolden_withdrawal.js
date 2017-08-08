@@ -422,11 +422,16 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
 this.wait(2000, function(){
 
-  md5= CryptoJS.MD5(document.getElementById("#adcopy-puzzle-image")).toString(CryptoJS.enc.Base64);
-  console.log("md5 "+md5);
+  captcha_object = this.evaluate(function(){
+
+    return document.querySelector("#adcopy-puzzle-image-image").src;
+  })
 
 
+  md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
+  
 });
+
 
        casper1.wait(100,function(){ //wait to start second page
 
