@@ -411,7 +411,7 @@ this.wait(2000, function(){
 
 
   md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
-  
+    console.log("md5: "+md5);
 });
 
 
