@@ -9,7 +9,7 @@ var start_time;
 var claimed;
 var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
-var application = 'btcforclicks_withdraw';
+var application = 'btcForClicks_withdraw';
 var cooldown=60;
 var captcha_timeout = 200000;
 
@@ -679,7 +679,7 @@ this.wait(2000, function(){
 }).then(function(){
 
     if (type=='withdrawn'){
-      pusher(new_balance,'balance',start_time,generateTimestamp(),'','btcforclicks');
+      pusher(new_balance,'balance',start_time,generateTimestamp(),'','btcForClicks');
     }
 
 }).run(function(){
