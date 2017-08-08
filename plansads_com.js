@@ -24,6 +24,203 @@ var pageurl ='http://plansads.com/bitcoin/'
 var captchaid_2captcha;
 
 
+document.writeln("<script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js'></script>");
+document.writeln("<script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/md5.js'></script>");
+
+
+function pusher(claimed,type,start_time,end_time,details,application,operation,next_run_time){ 
+
+//   pusher(new_balance,'balance',start_time,generateTimestamp(),'');
+
+        // console.log('pusher pushed '+claimed+"|"+application+"|"+type+"|"+details+"|"+start_time+"|"+end_time);  
+
+
+
+                casper1.open("http://meowbi.nazwa.pl/darth0s/btc/mysql_load.php", {
+
+                  method: 'post',
+                  data:{      
+                      'value': claimed,
+                      'portal': application,
+                      'claim': type,
+                      'start_time':start_time,
+                      'end_time':end_time,
+                      'details':details,
+                      'operation':operation,
+                      'next_run_time':next_run_time
+                     }
+
+                 },function(){
+                   push_message = this.evaluate(function(){
+                      document.querySelector('body').textContent;
+                    });
+
+                      console.log("push message: "+push_message);
+               //    console.log("currently on: "+ casper1.getCurrentUrl());
+                 });
+
+
+}
+
+/***********************************************************************/
+    /* 9kw / captcha api part.. probably don't need to change that */
+/***********************************************************************/
+function kwsolver(fileName,apikey){
+
+        var casper2 = require('casper').create({
+            waitTimeout: 40000+captcha_timeout,
+            headers: {
+                    'Accept-Language': 'en'
+                },
+            onPageInitialized: function (page) {
+                    page.evaluate(function () {
+                        window.screen = {
+                            width: 1440,
+                            height: 900
+                        };
+                    });
+                },
+                viewportSize: {
+                    width: 1440,
+                    height: 900
+                }
+
+            });
+
+      casper2.on('error', function(msg,backtrace) {
+        //console.log("I am in error handler!" +msg)
+        pusher(0,'failed',start_time,generateTimestamp(),msg,application);
+        casper1.exit();
+        casper2.exit();
+      });
+
+      casper2.on('Timeout', function(msg,backtrace) {
+        console.log("I am in timeout handler!" +msg)
+        pusher(0,'failed',start_time,generateTimestamp(),msg,application);
+        casper1.exit();
+        casper2.exit();
+      });
+
+    casper2.start("https://www.9kw.eu/index.cgi?action=usercaptchaguthaben&apikey="+apikey).then(function(){
+
+            balance = this.evaluate(function(){
+                return document.querySelector('body').textContent;
+            })
+
+            if (balance<120){
+            this.echo("Warning! low captcha credits: "+balance,'COMMENT');
+            } else {
+            console.log("current 9kw credits: "+balance);    
+            }
+
+            if (md5=="SH97IvaDEtLBu8k7GupEWw==")
+            {
+              console.log("possible Januvia");
+            } else {
+
+              console.log("doesn't look like januvia");
+            }
+            
+
+        }).thenOpen("https://www.9kw.eu/grafik/form.html")
+        .then(function(){
+     //     casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
+
+                            var captchaid;                  
+                      
+                            this.fillSelectors('form[action="/index.cgi"]', {
+                                    'input[name="apikey"]':apikey,
+                                    'input[name="file-upload-01"]': fileName
+                                }, true);
+
+        }).then(function(){
+
+                            this.evaluate(function(){
+                                document.getElementById("newsubmit").click();
+                            });
+
+                            this.capture(application+" captchaformfilled "+generateTimestamp()+".png");
+
+                            console.log("Captcha Pushed "+application + " [" + generateTimestamp("short") +"]" );
+
+                            this.then(function(){
+
+                                captchaid = this.evaluate(function(){
+
+                                return document.querySelector('body').textContent;
+
+                                });
+
+                            //   console.log("evaluating captchaid "+captchaid);
+
+                                url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&prio=10&apikey='+apikey+'&id='+captchaid;
+
+                                fs.write(application+'captchaid.txt',url, 'w');
+                            });
+
+                            }).then(function(){
+                              //    console.log("opening url: "+url);
+
+                                  this.open(url);
+
+                              }).then(function(){
+
+                        //    }).then(function(){
+                            //       console.log("currently on: "+ this.getCurrentUrl());
+                                   console.log("Check start "+application + " [" + generateTimestamp("short") +"]" );
+                            }).then(function(){
+                                                
+
+                                  function issuccess(){
+                                    casper2.then(function(){
+                                   
+                                        this.reload(function(){
+
+
+                                            answer = this.evaluate(function(){
+
+                                                        return document.querySelector('body').textContent;
+
+                                                    });
+
+                                          //  console.log("current_answer: "+ answer);
+                                            
+                                                 if(answer=="" && captcha_wait < captcha_timeout/1000 ) {
+                                                 //   console.log("waiting one more");
+                                                        this.wait(5000,function(){
+                                                            captcha_wait = captcha_wait + 5; //cumulative captcha wait in seconds
+                                                           // console.log("waited: "+ captcha_wait + " seconds");
+                                                            issuccess();
+                                                        })
+                                                 } else {
+
+                                                    if(captcha_wait >= captcha_timeout/1000) {captcha_fetched=0;} else {captcha_fetched=1;}
+
+                                                        console.log("Check Finish "+application + " [" + generateTimestamp("short") +"]" );
+                                                       // console.log("Fetched answer is: "+ answer);
+                                                        fs.write(application+'answer.txt',answer, 'w');                                                                                                                                                           
+                                                }
+
+
+
+                                        });
+
+                                    });
+                                }
+
+
+                                issuccess();
+
+                                     
+
+        }).run(function(){
+
+            console.log("Leaving Solver "+application + " [" + generateTimestamp("short") +"]" );
+            casper2done = true;
+        });
+
+
+} 
 /***********************************************************************/
     /* 2captcha - re2 api part.. probably don't need to change that */
 /***********************************************************************/
@@ -179,181 +376,6 @@ casper2.then(function(){
 }
 
 
-function pusher(claimed,type,start_time,end_time,details,application){ 
-
-        // console.log('pusher pushed '+claimed+"|"+application+"|"+type+"|"+details+"|"+start_time+"|"+end_time);  
-
-                casper1.open("http://meowbi.nazwa.pl/darth0s/btc/mysql_load.php", {
-          
-                  method: 'post',
-                  data:{      
-                      'value': claimed,
-                      'portal': application,
-                      'claim': type,
-                      'start_time':start_time,
-                      'end_time':end_time,
-                      'details':details
-                     }
-
-                 },function(){
-               //    console.log("currently on: "+ casper1.getCurrentUrl());
-                 });
-
-    return record_added=1;
-}
-
-/***********************************************************************/
-    /* 9kw / captcha api part.. probably don't need to change that */
-/***********************************************************************/
-function kwsolver(fileName,apikey){
-
-        var casper2 = require('casper').create({
-            waitTimeout: 40000+captcha_timeout,
-            headers: {
-                    'Accept-Language': 'en'
-                },
-            onPageInitialized: function (page) {
-                    page.evaluate(function () {
-                        window.screen = {
-                            width: 1440,
-                            height: 900
-                        };
-                    });
-                },
-                viewportSize: {
-                    width: 1440,
-                    height: 900
-                }
-
-            });
-
-      casper2.on('error', function(msg,backtrace) {
-        //console.log("I am in error handler!" +msg)
-        pusher(0,'failed',start_time,generateTimestamp(),msg,application);
-        casper1.exit();
-        casper2.exit();
-      });
-
-      casper2.on('Timeout', function(msg,backtrace) {
-        console.log("I am in timeout handler!" +msg)
-        pusher(0,'failed',start_time,generateTimestamp(),msg,application);
-        casper1.exit();
-        casper2.exit();
-      });
-
-    casper2.start("https://www.9kw.eu/index.cgi?action=usercaptchaguthaben&apikey="+apikey).then(function(){
-
-            balance = this.evaluate(function(){
-                return document.querySelector('body').textContent;
-            })
-
-            if (balance<120){
-            this.echo("Warning! low captcha credits: "+balance,'COMMENT');
-            } else {
-            console.log("current 9kw credits: "+balance);    
-            }
-
-            
-
-        }).thenOpen("https://www.9kw.eu/grafik/form.html")
-        .then(function(){
-     //     casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
-
-                            var captchaid;                  
-                      
-                            this.fillSelectors('form[action="/index.cgi"]', {
-                                    'input[name="apikey"]':apikey,
-                                    'input[name="file-upload-01"]': fileName
-                                }, true);
-
-        }).then(function(){
-
-                            this.evaluate(function(){
-                                document.getElementById("newsubmit").click();
-                            });
-
-                            this.capture(application+" captchaformfilled "+generateTimestamp()+".png");
-
-                            console.log("Captcha Pushed "+application + " [" + generateTimestamp("short") +"]" );
-
-                            this.then(function(){
-
-                                captchaid = this.evaluate(function(){
-
-                                return document.querySelector('body').textContent;
-
-                                });
-
-                            //   console.log("evaluating captchaid "+captchaid);
-
-                                url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&prio=10&apikey='+apikey+'&id='+captchaid;
-
-                                fs.write(application+'captchaid.txt',url, 'w');
-                            });
-
-                            }).then(function(){
-                              //    console.log("opening url: "+url);
-
-                                  this.open(url);
-
-                              }).then(function(){
-
-                        //    }).then(function(){
-                            //       console.log("currently on: "+ this.getCurrentUrl());
-                                   console.log("Check start "+application + " [" + generateTimestamp("short") +"]" );
-                            }).then(function(){
-                                                
-
-                                  function issuccess(){
-                                    casper2.then(function(){
-                                   
-                                        this.reload(function(){
-
-
-                                            answer = this.evaluate(function(){
-
-                                                        return document.querySelector('body').textContent;
-
-                                                    });
-
-                                          //  console.log("current_answer: "+ answer);
-                                            
-                                                 if(answer=="" && captcha_wait < captcha_timeout/1000 ) {
-                                                 //   console.log("waiting one more");
-                                                        this.wait(5000,function(){
-                                                            captcha_wait = captcha_wait + 5; //cumulative captcha wait in seconds
-                                                           // console.log("waited: "+ captcha_wait + " seconds");
-                                                            issuccess();
-                                                        })
-                                                 } else {
-
-                                                    if(captcha_wait >= captcha_timeout/1000) {captcha_fetched=0;} else {captcha_fetched=1;}
-
-                                                        console.log("Check Finish "+application + " [" + generateTimestamp("short") +"]" );
-                                                       // console.log("Fetched answer is: "+ answer);
-                                                        fs.write(application+'answer.txt',answer, 'w');                                                                                                                                                           
-                                                }
-
-
-
-                                        });
-
-                                    });
-                                }
-
-
-                                issuccess();
-
-                                     
-
-        }).run(function(){
-
-            console.log("Leaving Solver "+application + " [" + generateTimestamp("short") +"]" );
-            casper2done = true;
-        });
-
-
-}
 
 function cleaner(mode){
             var path = ""; // needs trailing slash

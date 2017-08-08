@@ -9,7 +9,8 @@ var start_time;
 var type;
 var msg;
 var claimed;
-var next_run_time
+var next_run_time;
+var md5;
 
 var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
@@ -19,6 +20,10 @@ var captcha_timeout = 200000;
 
 var captcha_wait=0;
 var captcha_fetched;
+
+document.writeln("<script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js'></script>");
+document.writeln("<script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/md5.js'></script>");
+
 
 function pusher(claimed,type,start_time,end_time,details,application,operation,next_run_time){ 
 
@@ -105,6 +110,13 @@ function kwsolver(fileName,apikey){
             console.log("current 9kw credits: "+balance);    
             }
 
+            if (md5=="SH97IvaDEtLBu8k7GupEWw==")
+            {
+              console.log("possible Januvia");
+            } else {
+
+              console.log("doesn't look like januvia");
+            }
             
 
         }).thenOpen("https://www.9kw.eu/grafik/form.html")
@@ -402,13 +414,20 @@ this.wait(2000,function(){
 });
 
 
-
-// image_url = application+'file22'+'.png';
-
 this.wait(4000, function(){
         this.capture(application+" captchaScreen "+generateTimestamp()+".png");
         console.log("Saving Captcha "+application + " [" + generateTimestamp("short")  +"]");
         this.captureSelector(application+'file22.png', '#adcopy-puzzle-image');
+
+
+});
+
+this.wait(2000, function(){
+
+  md5= CryptoJS.MD5(document.getElementById("#adcopy-puzzle-image")).toString(CryptoJS.enc.Base64);
+  console.log("md5 "+md5);
+
+
 });
 
 
@@ -575,6 +594,14 @@ this.wait(100,function(){ //wait to start second page
       
 
         });
+
+  this.wait(2000, function(){
+
+    md5= CryptoJS.MD5(document.getElementById("#adcopy-puzzle-image")).toString(CryptoJS.enc.Base64);
+    console.log("md5 "+md5);
+
+
+  });
 
    casper1.wait(100,function(){ //wait to start second page
 

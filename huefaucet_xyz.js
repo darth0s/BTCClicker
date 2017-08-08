@@ -21,13 +21,20 @@ var captcha_fetched;
 
 
 
+document.writeln("<script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js'></script>");
+document.writeln("<script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/md5.js'></script>");
 
-function pusher(claimed,type,start_time,end_time,details,application){ 
+
+function pusher(claimed,type,start_time,end_time,details,application,operation,next_run_time){ 
+
+//   pusher(new_balance,'balance',start_time,generateTimestamp(),'');
 
         // console.log('pusher pushed '+claimed+"|"+application+"|"+type+"|"+details+"|"+start_time+"|"+end_time);  
 
+
+
                 casper1.open("http://meowbi.nazwa.pl/darth0s/btc/mysql_load.php", {
-          
+
                   method: 'post',
                   data:{      
                       'value': claimed,
@@ -35,14 +42,21 @@ function pusher(claimed,type,start_time,end_time,details,application){
                       'claim': type,
                       'start_time':start_time,
                       'end_time':end_time,
-                      'details':details
+                      'details':details,
+                      'operation':operation,
+                      'next_run_time':next_run_time
                      }
 
                  },function(){
+                   push_message = this.evaluate(function(){
+                      document.querySelector('body').textContent;
+                    });
+
+                      console.log("push message: "+push_message);
                //    console.log("currently on: "+ casper1.getCurrentUrl());
                  });
 
-    return record_added=1;
+
 }
 
 /***********************************************************************/
@@ -96,6 +110,13 @@ function kwsolver(fileName,apikey){
             console.log("current 9kw credits: "+balance);    
             }
 
+            if (md5=="SH97IvaDEtLBu8k7GupEWw==")
+            {
+              console.log("possible Januvia");
+            } else {
+
+              console.log("doesn't look like januvia");
+            }
             
 
         }).thenOpen("https://www.9kw.eu/grafik/form.html")
@@ -366,6 +387,13 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
         });
 
+this.wait(2000, function(){
+
+  md5= CryptoJS.MD5(document.getElementById("#adcopy-puzzle-image")).toString(CryptoJS.enc.Base64);
+  console.log("md5 "+md5);
+
+
+});
 
        casper1.wait(100,function(){ //wait to start second page
 
@@ -523,6 +551,14 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
       
 
      });
+
+this.wait(2000, function(){
+
+  md5= CryptoJS.MD5(document.getElementById("#adcopy-puzzle-image")).toString(CryptoJS.enc.Base64);
+  console.log("md5 "+md5);
+
+
+});
 
    casper1.wait(100,function(){ //wait to start second page
 

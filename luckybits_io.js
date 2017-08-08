@@ -14,7 +14,7 @@ var captchaid;
 var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
 var application = 'getfree_coin_BCC';
-var cooldown=5;
+var cooldown=10;
 var captcha_timeout = 200000;
 
 var captcha_wait=0;
@@ -358,7 +358,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
 //cleanup previously generated screenshots
 
-}).thenOpen("http://getfree.co.in/bcash/",function(){
+}).thenOpen("http://luckybits.io/faucet/bch/",function(){
 /***********************************************************************/
                               /* login */
 /***********************************************************************/
@@ -373,7 +373,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
         
 
             this.evaluate(function(bitwallet) {
-                document.querySelector('input.form-control').value = bitwallet;
+                document.querySelector('input[name="address"]').value = bitwallet;
                // document.querySelector('.btn-lg').click(); 
             },bitwallet);
 
@@ -382,7 +382,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
 }).then(function(){ //answer checking module
 
-      this.wait(10000,function(){
+      this.wait(3000,function(){
             
          this.evaluate(function() {
                 document.querySelector('input[type=submit]').click();
@@ -391,6 +391,20 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
       // this.capture("bituniverse"+ generateTimestamp()+".png");
         });
+
+
+}).then(function(){ //answer checking module
+
+      this.wait(3000,function(){
+            
+         this.evaluate(function() {
+          document.querySelectorAll("a[href='http://luckybits.io/faucet/bch/']")[0].click();
+               // document.querySelector('.btn-lg').click(); 
+            });
+
+      // this.capture("bituniverse"+ generateTimestamp()+".png");
+        });
+
 
 
 }).then(function(){ //answer checking module
@@ -479,7 +493,7 @@ this.wait(2000, function(){
           this.wait(1000,function(){
 
             this.evaluate(function() {  
-                document.querySelector('input[type=submit]').click();         
+             document.querySelectorAll('input[type=submit]')[1].click();
             //    document.querySelector('.btn-lg').click(); 
             });
 
@@ -489,7 +503,7 @@ this.wait(2000, function(){
 
  }).then(function(){   
 
-        this.wait(2000,function(){
+        this.wait(15000,function(){
 
 
                     this.capture(application+" claimed0 "+generateTimestamp()+".png");

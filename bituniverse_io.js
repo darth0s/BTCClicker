@@ -21,6 +21,10 @@ var captcha_timeout = 200000;
 var captcha_wait=0;
 var captcha_fetched;
 
+document.writeln("<script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js'></script>");
+document.writeln("<script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/md5.js'></script>");
+
+
 function pusher(claimed,type,start_time,end_time,details,application,operation,next_run_time){ 
 
 //   pusher(new_balance,'balance',start_time,generateTimestamp(),'');
@@ -51,9 +55,10 @@ function pusher(claimed,type,start_time,end_time,details,application,operation,n
                       console.log("push message: "+push_message);
                //    console.log("currently on: "+ casper1.getCurrentUrl());
                  });
-    return record_added=1;
+
 
 }
+
 /***********************************************************************/
     /* 9kw / captcha api part.. probably don't need to change that */
 /***********************************************************************/
@@ -105,6 +110,13 @@ function kwsolver(fileName,apikey){
             console.log("current 9kw credits: "+balance);    
             }
 
+            if (md5=="SH97IvaDEtLBu8k7GupEWw==")
+            {
+              console.log("possible Januvia");
+            } else {
+
+              console.log("doesn't look like januvia");
+            }
             
 
         }).thenOpen("https://www.9kw.eu/grafik/form.html")
@@ -206,7 +218,6 @@ function kwsolver(fileName,apikey){
 
 
 }
-
 function cleaner(mode){
             var path = ""; // needs trailing slash
             var list = fs.list(path);
@@ -376,6 +387,14 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
         });
 
 
+this.wait(2000, function(){
+
+  md5= CryptoJS.MD5(document.getElementById("#adcopy-puzzle-image")).toString(CryptoJS.enc.Base64);
+  console.log("md5 "+md5);
+
+
+});
+
        casper1.wait(100,function(){ //wait to start second page
 
             kwsolver(application+'file22.png',apikey);
@@ -533,6 +552,14 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
      });
 
+
+this.wait(2000, function(){
+
+  md5= CryptoJS.MD5(document.getElementById("#adcopy-puzzle-image")).toString(CryptoJS.enc.Base64);
+  console.log("md5 "+md5);
+
+
+});
    casper1.wait(100,function(){ //wait to start second page
 
             kwsolver(application+'file22.png',apikey);
