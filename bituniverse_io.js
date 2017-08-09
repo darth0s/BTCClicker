@@ -56,7 +56,7 @@ function pusher(claimed,type,start_time,end_time,details,application,operation,n
                //    console.log("currently on: "+ casper1.getCurrentUrl());
                  });
 
-
+    return record_added=1;
 }
 
 /***********************************************************************/
@@ -109,109 +109,130 @@ function kwsolver(fileName,apikey){
             } else {
             console.log("current 9kw credits: "+balance);    
             }
-
-            if (md5=="SH97IvaDEtLBu8k7GupEWw==")
+            
+            if (md5=="1B2M2Y8AsgTpgAmY7PhCfg==")
             {
               console.log("possible Januvia");
+
+                answer = "JANUVIA";
+                url ="manual Januvia";
+
+                fs.write(application+'answer.txt',answer, 'w');
+                fs.write(application+'captchaid.txt',url, 'w');
+                answer_template=1;
+
+
             } else {
 
               console.log("doesn't look like januvia");
+              answer_template=0;
             }
             
 
         }).thenOpen("https://www.9kw.eu/grafik/form.html")
+
         .then(function(){
      //     casper2.start("https://www.9kw.eu/grafik/form.html").then(function(){
 
-                            var captchaid;                  
-                      
-                            this.fillSelectors('form[action="/index.cgi"]', {
-                                    'input[name="apikey"]':apikey,
-                                    'input[name="file-upload-01"]': fileName
-                                }, true);
+            if (answer_template==0){
+
+                    var captchaid;                  
+              
+                    this.fillSelectors('form[action="/index.cgi"]', {
+                            'input[name="apikey"]':apikey,
+                            'input[name="file-upload-01"]': fileName
+                        }, true);
+              }
 
         }).then(function(){
 
-                            this.evaluate(function(){
-                                document.getElementById("newsubmit").click();
-                            });
+            if (answer_template==0){
+                this.evaluate(function(){
+                    document.getElementById("newsubmit").click();
+                });
 
-                            this.capture(application+" captchaformfilled "+generateTimestamp()+".png");
+                this.capture(application+" captchaformfilled "+generateTimestamp()+".png");
 
-                            console.log("Captcha Pushed "+application + " [" + generateTimestamp("short") +"]" );
+                console.log("Captcha Pushed "+application + " [" + generateTimestamp("short") +"]" );
 
-                            this.then(function(){
+                this.then(function(){
 
-                                captchaid = this.evaluate(function(){
+                    captchaid = this.evaluate(function(){
 
-                                return document.querySelector('body').textContent;
+                     return document.querySelector('body').textContent;
 
-                                });
+                    });
 
-                            //   console.log("evaluating captchaid "+captchaid);
+                    url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&prio=10&apikey='+apikey+'&id='+captchaid;
 
-                                url = 'https://www.9kw.eu/index.cgi?action=usercaptchacorrectdata&prio=10&apikey='+apikey+'&id='+captchaid;
+                    fs.write(application+'captchaid.txt',url, 'w');
+                });
+              }
 
-                                fs.write(application+'captchaid.txt',url, 'w');
-                            });
+        }).then(function(){
+              
+             if (answer_template==0){
 
-                            }).then(function(){
-                              //    console.log("opening url: "+url);
+               this.open(url);
 
-                                  this.open(url);
+             }
 
-                              }).then(function(){
+        }).then(function(){
 
-                        //    }).then(function(){
-                            //       console.log("currently on: "+ this.getCurrentUrl());
-                                   console.log("Check start "+application + " [" + generateTimestamp("short") +"]" );
-                            }).then(function(){
-                                                
+            if (answer_template==0){
 
-                                  function issuccess(){
-                                    casper2.then(function(){
-                                   
-                                        this.reload(function(){
+              console.log("Check start "+application + " [" + generateTimestamp("short") +"]" );
 
+            }
 
-                                            answer = this.evaluate(function(){
+        }).then(function(){
+            
+            if (answer_template==0){                                     
 
-                                                        return document.querySelector('body').textContent;
-
-                                                    });
-
-                                          //  console.log("current_answer: "+ answer);
-                                            
-                                                 if(answer=="" && captcha_wait < captcha_timeout/1000 ) {
-                                                 //   console.log("waiting one more");
-                                                        this.wait(5000,function(){
-                                                            captcha_wait = captcha_wait + 5; //cumulative captcha wait in seconds
-                                                           // console.log("waited: "+ captcha_wait + " seconds");
-                                                            issuccess();
-                                                        })
-                                                 } else {
-
-                                                    if(captcha_wait >= captcha_timeout/1000) {captcha_fetched=0;} else {captcha_fetched=1;}
-
-                                                        console.log("Check Finish "+application + " [" + generateTimestamp("short") +"]" );
-                                                       // console.log("Fetched answer is: "+ answer);
-                                                        fs.write(application+'answer.txt',answer, 'w');                                                                                                                                                           
-                                                }
+                  function issuccess(){
+                    casper2.then(function(){
+                   
+                        this.reload(function(){
 
 
+                            answer = this.evaluate(function(){
 
-                                        });
+                                        return document.querySelector('body').textContent;
 
                                     });
+
+                          //  console.log("current_answer: "+ answer);
+                            
+                                 if(answer=="" && captcha_wait < captcha_timeout/1000 ) {
+                                 //   console.log("waiting one more");
+                                        this.wait(5000,function(){
+                                            captcha_wait = captcha_wait + 5; //cumulative captcha wait in seconds
+                                           // console.log("waited: "+ captcha_wait + " seconds");
+                                            issuccess();
+                                        })
+                                 } else {
+
+                                    if(captcha_wait >= captcha_timeout/1000) {captcha_fetched=0;} else {captcha_fetched=1;}
+
+                                        console.log("Check Finish "+application + " [" + generateTimestamp("short") +"]" );
+                                       // console.log("Fetched answer is: "+ answer);
+                                        fs.write(application+'answer.txt',answer, 'w');                                                                                                                                                           
                                 }
 
 
-                                issuccess();
 
-                                     
+                        });
+
+                    });
+                }
+
+
+                issuccess();
+
+            }                   
 
         }).run(function(){
-
+     
             console.log("Leaving Solver "+application + " [" + generateTimestamp("short") +"]" );
             casper2done = true;
         });
@@ -561,11 +582,17 @@ this.wait(2000, function(){
 
 this.wait(2000, function(){
 
-  md5= CryptoJS.MD5(document.getElementById("#adcopy-puzzle-image")).toString(CryptoJS.enc.Base64);
-  console.log("md5 "+md5);
+  captcha_object = this.evaluate(function(){
+
+    return document.querySelector("#adcopy-puzzle-image-image").src;
+  })
 
 
+  md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
+  
 });
+
+
    casper1.wait(100,function(){ //wait to start second page
 
             kwsolver(application+'file22.png',apikey);
