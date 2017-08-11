@@ -531,6 +531,10 @@ this.wait(2000, function(){
         this.wait(15000,function(){
 
 
+                    error_reason = this.evaluate(function() {
+                      return document.querySelector('div.alert.alert-danger').textContent;
+                    })
+
                     this.capture(application+" claimed0 "+generateTimestamp()+".png");
 
                     current_balance = this.evaluate(function() {
@@ -546,10 +550,10 @@ this.wait(2000, function(){
                             this.echo("woo hoo! claimed "+ claimed +" satoshi / approx: "+claimed*plnratio+" PLN",'TRACE');
                             type ="claimed";
                         } else {
-                            console.log("something went wrong. no satoshi for you!");
+                          console.log("something went wrong. no satoshi for you! ( "+error_reason+")");
                             type="failed";
                             claimed=0;
-                            msg = "url: "+fs.read(application+'captchaid.txt')
+                            msg = error_reason+" ;url: "+fs.read(application+'captchaid.txt');
                         }
 
             });
