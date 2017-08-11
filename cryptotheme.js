@@ -11,10 +11,10 @@ var type;
 var msg;
 var claimed;
 var captchaid;       
-var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
+var bitwallet = 'D9ykYJhguK12UyjnSy6nMEVg3Y5Ecktt3J';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
-var application = 'topbtcsites';
-var cooldown=1440;
+var application = 'cryptotheme_DOGE';
+var cooldown=5;
 var captcha_timeout = 200000;
 
 var captcha_wait=0;
@@ -366,7 +366,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
 //cleanup previously generated screenshots
 
-}).thenOpen("https://topbtcsites.com/freebitcoin/",function(){
+}).thenOpen("http://ecards.nijahosting.com/cryptotheme/index.php",function(){
 /***********************************************************************/
                               /* login */
 /***********************************************************************/
@@ -376,16 +376,10 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
             console.log("Opening "+application + " [" + generateTimestamp("short")  +"]");
             this.capture(application+" initial "+generateTimestamp()+".png");
 
-           // console.log(bitwallet);
-
-           //close popup window
-            this.evaluate(function(){
-              document.querySelector('button.ad_close').click();
-            });
-
+   
 
             this.evaluate(function(bitwallet) {
-                document.querySelectorAll('input.form-control')[1].value = bitwallet;
+            document.querySelectorAll('input[type=text]')[1].value = bitwallet;
                // document.querySelector('.btn-lg').click(); 
             },bitwallet);
 
@@ -484,7 +478,7 @@ this.wait(2000, function(){
           this.wait(1000,function(){
 
             this.evaluate(function() {           
-                document.querySelector('.btn-lg').click(); 
+                  document.querySelector('input.btn.btn-primary.btn-lg.claim-button').click()
             });
 
         })
@@ -495,12 +489,16 @@ this.wait(2000, function(){
 
         this.wait(2000,function(){
 
+                    error_reason = this.evaluate(function() {
+                      return document.querySelector('div.alert.alert-danger').textContent;
+                    })
+
+
 
                     this.capture(application+" claimed0 "+generateTimestamp()+".png");
 
                     current_balance = this.evaluate(function() {
-                    
-                       return document.querySelector('div.alert.alert-success').textContent.match(/\d+/)[0];
+                      return document.querySelector('div.alert.alert-success').textContent.match(/\d\.\d+/)[0]*100000000;
                     });
 
 
@@ -511,10 +509,10 @@ this.wait(2000, function(){
                             this.echo("woo hoo! claimed "+ claimed +" satoshi / approx: "+claimed*plnratio+" PLN",'TRACE');
                             type ="claimed";
                         } else {
-                            console.log("something went wrong. no satoshi for you!");
-                            type="failed";
+                             console.log("something went wrong. no satoshi for you! ( "+error_reason+")");
+                           type="failed";
                             claimed=0;
-                            msg = "url: "+fs.read(application+'captchaid.txt')
+                            msg = error_reason+" ;url: "+fs.read(application+'captchaid.txt');
                         }
 
             });
@@ -545,7 +543,7 @@ this.wait(2000, function(){
       }
       
     
-    cleaner("quiet");
+//    cleaner("quiet");
     this.exit();
 
 });
