@@ -13,7 +13,7 @@ var claimed;
 var captchaid;       
 var bitwallet = 'D9ykYJhguK12UyjnSy6nMEVg3Y5Ecktt3J';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
-var application = 'cryptotheme_DOGE';
+var application = 'multifaucet_DOGE';
 var cooldown=5;
 var captcha_timeout = 200000;
 
@@ -366,7 +366,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
 //cleanup previously generated screenshots
 
-}).thenOpen("http://ecards.nijahosting.com/cryptotheme/index.php",function(){
+}).thenOpen("http://ecards.nijahosting.com/multifaucet/index.php",function(){
 /***********************************************************************/
                               /* login */
 /***********************************************************************/

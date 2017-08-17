@@ -11,6 +11,7 @@ var msg;
 var claimed;
 var next_run_time;
 var md5;
+var captcha_object;
 
 var bitwallet = '1AVNfQQjEJCmst83oQH6RJUpbqkHZWe1W7';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
@@ -313,6 +314,43 @@ function generateTimestamp(version){
 } 
 
 
+function decodeImage(imagePath, type, callback) {
+      //opyright to Artjom (https://stackoverflow.com/a/27039837/7901834)
+        var page = require('webpage').create();
+        var htmlFile = imagePath+"_temp.html";
+        fs.write(htmlFile, '<html><body><img src="'+imagePath+'"></body></html>');
+        var possibleCallback = type;
+        type = callback ? type : "image/bmp";
+        callback = callback || possibleCallback;
+        page.open(htmlFile, function(){
+            page.evaluate(function(imagePath, type){
+                var img = document.querySelector("img");
+                // the following is copied from http://stackoverflow.com/a/934925
+                var canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // Copy the image contents to the canvas
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+
+                // Get the data-URL formatted image
+                // Firefox supports PNG and JPEG. You could check img.src to
+                // guess the original format, but be aware the using "image/jpg"
+                // will re-encode the image.
+                window.dataURL = canvas.toDataURL(type);
+            }, imagePath, type);
+            fs.remove(htmlFile);
+            var dataUrl = page.evaluate(function(){
+                return window.dataURL;
+            });
+            page.close();
+            callback(dataUrl, type);
+        });
+}
+
+
+
 /* end of functions */
 
 var casper1 = require('casper').create({
@@ -334,6 +372,8 @@ onPageInitialized: function (page) {
         width: 1440,
         height: 900
     }
+    //   ,verbose: true,
+    //logLevel: "debug"
 
     });
 
@@ -445,16 +485,27 @@ this.wait(4000, function(){
 
 });
 
-this.wait(2000, function(){
 
-  captcha_object = this.evaluate(function(){
+this.wait(1000, function(){
+   decodeImage(application+'file22.png', function(imgB64Data, type){
+        fs.write(application+'Captchahash.txt',imgB64Data);
+        console.log(imgB64Data.length);
+        
+    });
 
-    return document.querySelector("#adcopy-puzzle-image-image").src;
-  })
+});
 
 
+
+
+this.wait(100 ,function(){ //wait to start second page
+  captcha_object = fs.read(application+'Captchahash.txt');
+  fs.remove(application+'Captchahash.txt');
   md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
-  
+  console.log("md5 "+md5);
+
+//1B2M2Y8AsgTpgAmY7PhCfg==
+
 });
 
 
@@ -531,6 +582,7 @@ this.wait(100,function(){ //wait to start second page
         current_balance = this.evaluate(function() {
             
                 return document.querySelector('span[style="font-size:18px;"]').textContent.match(/\d+/)[0];
+                //document.querySelector("#adcopy-puzzle-image-image").children[0].src.match(/([^;]+)/)[0]
             });
 
 
@@ -622,13 +674,29 @@ this.wait(100,function(){ //wait to start second page
 
         });
 
-  this.wait(2000, function(){
+ 
+    this.wait(1000, function(){
+       decodeImage(application+'file22.png', function(imgB64Data, type){
+            fs.write(application+'Captchahash.txt',imgB64Data);
+            console.log(imgB64Data.length);
+            
+        });
 
-    md5= CryptoJS.MD5(document.getElementById("#adcopy-puzzle-image")).toString(CryptoJS.enc.Base64);
-    console.log("md5 "+md5);
+    });
 
 
-  });
+
+
+    this.wait(100 ,function(){ 
+      captcha_object = fs.read(application+'Captchahash.txt');
+      fs.remove(application+'Captchahash.txt');
+      md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
+      console.log("md5 "+md5);
+
+    //1B2M2Y8AsgTpgAmY7PhCfg==
+
+    });
+
 
    casper1.wait(100,function(){ //wait to start second page
 
@@ -741,7 +809,7 @@ this.wait(100,function(){ //wait to start second page
     if (type=="claimed"){
         console.log("** Next Run "+application + " [" + generateTimestamp("shift") +"] **");
         
-         console.log(666+''+start_time+generateTimestamp()+'',application+'push'+Date.now()+(cooldown*60*1000));
+       //  console.log(666+''+start_time+generateTimestamp()+'',application+'push'+Date.now()+(cooldown*60*1000));
 
          pusher(666,'',start_time,generateTimestamp(),'',application,'push', Date.now()+(cooldown*60*1000));
 

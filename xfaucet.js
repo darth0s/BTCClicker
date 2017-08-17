@@ -13,7 +13,7 @@ var claimed;
 var captchaid;       
 var bitwallet = 'D9ykYJhguK12UyjnSy6nMEVg3Y5Ecktt3J';
 var apikey = '6OSN9CJ6BGXUTAMPJM'; //9kw
-var application = 'cryptotheme_DOGE';
+var application = 'xfaucet_DOGE';
 var cooldown=5;
 var captcha_timeout = 200000;
 
@@ -296,6 +296,40 @@ function generateTimestamp(version){
 
 } 
 
+function decodeImage(imagePath, type, callback) {
+      //opyright to Artjom (https://stackoverflow.com/a/27039837/7901834)
+        var page = require('webpage').create();
+        var htmlFile = imagePath+"_temp.html";
+        fs.write(htmlFile, '<html><body><img src="'+imagePath+'"></body></html>');
+        var possibleCallback = type;
+        type = callback ? type : "image/bmp";
+        callback = callback || possibleCallback;
+        page.open(htmlFile, function(){
+            page.evaluate(function(imagePath, type){
+                var img = document.querySelector("img");
+                // the following is copied from http://stackoverflow.com/a/934925
+                var canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // Copy the image contents to the canvas
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+
+                // Get the data-URL formatted image
+                // Firefox supports PNG and JPEG. You could check img.src to
+                // guess the original format, but be aware the using "image/jpg"
+                // will re-encode the image.
+                window.dataURL = canvas.toDataURL(type);
+            }, imagePath, type);
+            fs.remove(htmlFile);
+            var dataUrl = page.evaluate(function(){
+                return window.dataURL;
+            });
+            page.close();
+            callback(dataUrl, type);
+        });
+}
 
 /* end of functions */
 
@@ -366,12 +400,12 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
 //cleanup previously generated screenshots
 
-}).thenOpen("http://ecards.nijahosting.com/cryptotheme/index.php",function(){
+}).thenOpen("https://www.xfaucet.net/dogecoin/",function(){
 /***********************************************************************/
                               /* login */
 /***********************************************************************/
    
-        this.wait(10000,function(){
+        this.wait(5000,function(){
             
             console.log("Opening "+application + " [" + generateTimestamp("short")  +"]");
             this.capture(application+" initial "+generateTimestamp()+".png");
@@ -379,16 +413,26 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
    
 
             this.evaluate(function(bitwallet) {
-            document.querySelectorAll('input[type=text]')[1].value = bitwallet;
+            document.querySelectorAll('input.form-control.input-lg')[0].value = bitwallet;
                // document.querySelector('.btn-lg').click(); 
             },bitwallet);
 
-      // this.capture("bituniverse"+ generateTimestamp()+".png");
         });
 
 
+          this.wait(1000,function(){
+                
+      
+                this.evaluate(function() {
+                document.querySelectorAll('a.btn.btn-default.btn-lg.btn-block')[0].click();
+                   // document.querySelector('.btn-lg').click(); 
+                });
 
-        this.wait(4000, function(){
+          // this.capture("bituniverse"+ generateTimestamp()+".png");
+          });
+
+
+        this.wait(1000, function(){
             this.capture(application+" captchaScreen "+generateTimestamp()+".png");
             console.log("Saving Captcha "+application + " [" + generateTimestamp("short")  +"]");
             this.captureSelector(application+'file22.png', '#adcopy-puzzle-image');
@@ -396,19 +440,28 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
         });
 
 
-this.wait(2000, function(){
 
-  captcha_object = this.evaluate(function(){
+      this.wait(1000, function(){
+       decodeImage(application+'file22.png', function(imgB64Data, type){
+            fs.write(application+'Captchahash.txt',imgB64Data);
+            console.log(imgB64Data.length);
+            
+        });
 
-    return document.querySelector("#adcopy-puzzle-image-image").src;
-  })
+    });
 
 
-  md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
-  
-      console.log("md5: "+md5);
-  
-});
+
+
+    this.wait(100 ,function(){ 
+      captcha_object = fs.read(application+'Captchahash.txt');
+      fs.remove(application+'Captchahash.txt');
+      md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
+      console.log("md5 "+md5);
+
+    //1B2M2Y8AsgTpgAmY7PhCfg==
+
+    });
 
 
        casper1.wait(100,function(){ //wait to start second page
@@ -477,10 +530,18 @@ this.wait(2000, function(){
                               /* claiming */
 /***********************************************************************/
 
+         this.wait(1000,function(){
+
+            this.evaluate(function() {           
+                  document.getElementById("agree").click();
+            });
+
+        })
+
           this.wait(1000,function(){
 
             this.evaluate(function() {           
-                  document.querySelector('input.btn.btn-primary.btn-lg.claim-button').click()
+                  document.querySelector('input.btn.btn-dark.btn-block.btn-lg').click();
             });
 
         })
@@ -500,7 +561,8 @@ this.wait(2000, function(){
                     this.capture(application+" claimed0 "+generateTimestamp()+".png");
 
                     current_balance = this.evaluate(function() {
-                      return document.querySelector('div.alert.alert-success').textContent.match(/\d\.\d+/)[0]*100000000;
+                    
+                       return document.querySelector('div.alert.alert-success').textContent.match(/\d\.\d+/)[0]*100000000;
                     });
 
 
@@ -511,8 +573,8 @@ this.wait(2000, function(){
                             this.echo("woo hoo! claimed "+ claimed +" satoshi / approx: "+claimed*plnratio+" PLN",'TRACE');
                             type ="claimed";
                         } else {
-                             console.log("something went wrong. no satoshi for you! ( "+error_reason+")");
-                           type="failed";
+                            console.log("something went wrong. no satoshi for you! ( "+error_reason+")");
+                            type="failed";
                             claimed=0;
                             msg = error_reason+" ;url: "+fs.read(application+'captchaid.txt');
                         }

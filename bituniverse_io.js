@@ -308,6 +308,40 @@ function generateTimestamp(version){
 
 } 
 
+function decodeImage(imagePath, type, callback) {
+      //opyright to Artjom (https://stackoverflow.com/a/27039837/7901834)
+        var page = require('webpage').create();
+        var htmlFile = imagePath+"_temp.html";
+        fs.write(htmlFile, '<html><body><img src="'+imagePath+'"></body></html>');
+        var possibleCallback = type;
+        type = callback ? type : "image/bmp";
+        callback = callback || possibleCallback;
+        page.open(htmlFile, function(){
+            page.evaluate(function(imagePath, type){
+                var img = document.querySelector("img");
+                // the following is copied from http://stackoverflow.com/a/934925
+                var canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // Copy the image contents to the canvas
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+
+                // Get the data-URL formatted image
+                // Firefox supports PNG and JPEG. You could check img.src to
+                // guess the original format, but be aware the using "image/jpg"
+                // will re-encode the image.
+                window.dataURL = canvas.toDataURL(type);
+            }, imagePath, type);
+            fs.remove(htmlFile);
+            var dataUrl = page.evaluate(function(){
+                return window.dataURL;
+            });
+            page.close();
+            callback(dataUrl, type);
+        });
+}
 
 /* end of functions */
 
@@ -409,18 +443,28 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
 
 
 
-this.wait(2000, function(){
 
-  captcha_object = this.evaluate(function(){
+      this.wait(1000, function(){
+       decodeImage(application+'file22.png', function(imgB64Data, type){
+            fs.write(application+'Captchahash.txt',imgB64Data);
+            console.log(imgB64Data.length);
+            
+        });
 
-    return document.querySelector("#adcopy-puzzle-image-image").src;
-  })
+    });
 
 
-  md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
-    console.log("md5: "+md5);
-});
 
+
+    this.wait(100 ,function(){ 
+      captcha_object = fs.read(application+'Captchahash.txt');
+      fs.remove(application+'Captchahash.txt');
+      md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
+      console.log("md5 "+md5);
+
+    //1B2M2Y8AsgTpgAmY7PhCfg==
+
+    });
 
        casper1.wait(100,function(){ //wait to start second page
 
@@ -580,17 +624,27 @@ this.wait(2000, function(){
      });
 
 
-this.wait(2000, function(){
+      this.wait(1000, function(){
+       decodeImage(application+'file22.png', function(imgB64Data, type){
+            fs.write(application+'Captchahash.txt',imgB64Data);
+            console.log(imgB64Data.length);
+            
+        });
 
-  captcha_object = this.evaluate(function(){
-
-    return document.querySelector("#adcopy-puzzle-image-image").src;
-  })
+    });
 
 
-  md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
-  
-});
+
+
+    this.wait(100 ,function(){ 
+      captcha_object = fs.read(application+'Captchahash.txt');
+      fs.remove(application+'Captchahash.txt');
+      md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
+      console.log("md5 "+md5);
+
+    //1B2M2Y8AsgTpgAmY7PhCfg==
+
+    });
 
 
    casper1.wait(100,function(){ //wait to start second page
