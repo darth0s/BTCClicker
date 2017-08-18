@@ -489,7 +489,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
       captcha_object = fs.read(application+'Captchahash.txt');
       fs.remove(application+'Captchahash.txt');
       md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
-      console.log("md5 "+md5);
+    //  console.log("md5 "+md5);
 
     //1B2M2Y8AsgTpgAmY7PhCfg==
 

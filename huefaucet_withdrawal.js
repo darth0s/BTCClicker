@@ -477,7 +477,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
       this.wait(1000, function(){
        decodeImage(application+'file22.png', function(imgB64Data, type){
             fs.write(application+'Captchahash.txt',imgB64Data);
-            console.log(imgB64Data.length);
+          //  console.log(imgB64Data.length);
             
         });
 
@@ -490,7 +490,7 @@ this.echo("** starting " + application +" **",'GREEN_BAR');
       captcha_object = fs.read(application+'Captchahash.txt');
       fs.remove(application+'Captchahash.txt');
       md5= CryptoJS.MD5(captcha_object).toString(CryptoJS.enc.Base64);
-      console.log("md5 "+md5);
+     // console.log("md5 "+md5);
 
     //1B2M2Y8AsgTpgAmY7PhCfg==
 
